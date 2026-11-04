@@ -5,7 +5,8 @@ import { randomBytes } from "node:crypto";
 import { del, put } from "@vercel/blob";
 import sharp from "sharp";
 import { fetchPublico } from "./red";
-import { UPLOADS_DIR } from "./store";
+import { UPLOADS_DIR, usaPostgres } from "./store";
+import { borrarImagenEnBd, guardarImagenEnBd, leerImagenEnBd } from "./store-pg";
 
 const MAX_BYTES = 12 * 1024 * 1024;
 const TIPOS = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
@@ -13,13 +14,13 @@ export const NOMBRE_VALIDO = /^[a-f0-9]{16}\.webp$/;
 
 export class ErrorImagen extends Error {}
 
-/** Con Vercel Blob conectado (BLOB_READ_WRITE_TOKEN) las fotos van ahí; si no, al disco del servidor. */
+/** Blob queda solo como respaldo si no hay base. Con Postgres las fotos van a lc_imagenes. */
 const usaBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 const esUrl = (v: string) => v.startsWith("https://");
 
 /**
- * Reduce a 1600 px como máximo, pasa a WebP y guarda. Devuelve lo que se anota en la noticia: la dirección
- * pública de la foto en Vercel Blob, o el nombre del archivo si se guardó en el disco (se sirve desde /media).
+ * Reduce a 1600 px como máximo, pasa a WebP y guarda. Devuelve lo que se anota en la noticia: el nombre del
+ * archivo en la base (se sirve desde /media), la dirección pública en Vercel Blob, o el archivo en disco.
  */
 async function procesarYGuardar(entrada: Buffer): Promise<string> {
   let salida: Buffer;
@@ -33,6 +34,16 @@ async function procesarYGuardar(entrada: Buffer): Promise<string> {
     throw new ErrorImagen("No pudimos leer esa imagen. Probá con otro archivo.");
   }
   const nombre = `${randomBytes(8).toString("hex")}.webp`;
+
+  if (usaPostgres()) {
+    try {
+      await guardarImagenEnBd(nombre, salida);
+      return nombre;
+    } catch (e) {
+      console.error("[imagenes] base:", e instanceof Error ? e.message : e);
+      throw new ErrorImagen("No se pudo guardar la imagen en la base.");
+    }
+  }
 
   if (usaBlob()) {
     try {
@@ -53,7 +64,7 @@ async function procesarYGuardar(entrada: Buffer): Promise<string> {
     await fs.mkdir(UPLOADS_DIR, { recursive: true });
     await fs.writeFile(path.join(UPLOADS_DIR, nombre), salida);
   } catch {
-    throw new ErrorImagen("No se pudo guardar la imagen en el disco del servidor. En Vercel hay que conectar Vercel Blob.");
+    throw new ErrorImagen("No se pudo guardar la imagen en el disco del servidor.");
   }
   return nombre;
 }
@@ -86,6 +97,19 @@ export async function guardarImagenDesdeUrl(url: string | null | undefined): Pro
   }
 }
 
+/** Lee una foto guardada: primero la base, y si no está, el disco. */
+export async function leerImagenGuardada(nombre: string): Promise<Buffer | null> {
+  if (usaPostgres()) {
+    const enBd = await leerImagenEnBd(nombre);
+    if (enBd) return enBd;
+  }
+  try {
+    return await fs.readFile(path.join(UPLOADS_DIR, nombre));
+  } catch {
+    return null;
+  }
+}
+
 export async function borrarImagen(valor: string | null | undefined) {
   if (!valor) return;
   if (esUrl(valor)) {
@@ -93,5 +117,6 @@ export async function borrarImagen(valor: string | null | undefined) {
     return;
   }
   if (!NOMBRE_VALIDO.test(valor)) return;
+  if (usaPostgres()) await borrarImagenEnBd(valor);
   await fs.rm(path.join(UPLOADS_DIR, valor), { force: true });
 }

@@ -44,7 +44,11 @@ function asegurarEsquema() {
          creada timestamptz NOT NULL,
          datos jsonb NOT NULL
        );
-       CREATE INDEX IF NOT EXISTS lc_noticias_creada ON lc_noticias (creada DESC);`,
+       CREATE INDEX IF NOT EXISTS lc_noticias_creada ON lc_noticias (creada DESC);
+       CREATE TABLE IF NOT EXISTS lc_imagenes (
+         nombre text PRIMARY KEY,
+         datos bytea NOT NULL
+       );`,
     )
     .then(() => undefined)
     .catch((e) => {
@@ -108,6 +112,29 @@ async function escribir(q: Consulta, db: Db, antes: Foto) {
   const quedan = new Set(db.noticias.map((n) => n.id));
   const borrar = [...antes.noticias.keys()].filter((id) => !quedan.has(id));
   if (borrar.length > 0) await q.query("DELETE FROM lc_noticias WHERE id = ANY($1::text[])", [borrar]);
+}
+
+/** Guarda los bytes de una foto ya procesada. El nombre es el que queda en la noticia y se sirve desde /media. */
+export async function guardarImagenEnBd(nombre: string, datos: Buffer) {
+  await asegurarEsquema();
+  await conexion().query(
+    "INSERT INTO lc_imagenes (nombre, datos) VALUES ($1, $2) ON CONFLICT (nombre) DO UPDATE SET datos = EXCLUDED.datos",
+    [nombre, datos],
+  );
+}
+
+/** Lee una foto por su nombre, o null si no está. */
+export async function leerImagenEnBd(nombre: string): Promise<Buffer | null> {
+  await asegurarEsquema();
+  const r = await conexion().query<{ datos: Buffer }>("SELECT datos FROM lc_imagenes WHERE nombre = $1", [nombre]);
+  const datos = r.rows[0]?.datos;
+  if (!datos) return null;
+  return Buffer.isBuffer(datos) ? datos : Buffer.from(datos);
+}
+
+export async function borrarImagenEnBd(nombre: string) {
+  await asegurarEsquema();
+  await conexion().query("DELETE FROM lc_imagenes WHERE nombre = $1", [nombre]);
 }
 
 export const motorPg: Motor = {

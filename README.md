@@ -159,10 +159,10 @@ El sitio elige solo según el entorno:
 
 - **En tu computadora** (sin `DATABASE_URL`): un archivo `data/db.json` y las fotos en `data/uploads/`
   (carpeta ignorada por git, se puede mover con `DATA_DIR`). Las fotos se sirven desde `/media/…`.
-- **En Vercel** (con `DATABASE_URL` y `BLOB_READ_WRITE_TOKEN`): las noticias, anuncios, ajustes y la conexión
-  con Meta van a una base **Postgres** (Neon) y las fotos a **Vercel Blob**. Las tablas se crean solas la
-  primera vez. Cada cambio corre en una transacción con un candado, así que el panel, un aviso de Make y el
-  cron pueden trabajar a la vez sin pisarse.
+- **En Vercel** (con `DATABASE_URL`): las noticias, anuncios, ajustes, la conexión con Meta y las fotos van
+  a una base **Postgres** (Neon). Cada foto es una fila de `lc_imagenes` y se sirve desde `/media/…`. Las
+  tablas se crean solas la primera vez. Cada cambio corre en una transacción con un candado, así que el
+  panel, un aviso de Make y el cron pueden trabajar a la vez sin pisarse. **Blob** queda para los videos.
 
 En los dos casos las fotos se reducen a 1600 px y se pasan a WebP. Desde el panel, además, el navegador las
 achica antes de enviarlas (Vercel corta los pedidos de más de 4,5 MB, y una foto de celular pesa más).
@@ -196,8 +196,8 @@ clics en los botones importantes (enviar noticia, redes, compartir, radio) y las
    más cosas, en Vercel poné *Root Directory* en `web`.
 2. **Proyecto.** En Vercel, *Add New, Project*, elegí el repositorio. Detecta Next.js solo.
 3. **Almacenamiento.** En el proyecto, pestaña *Storage*: creá una base **Neon** (Postgres, desde el
-   Marketplace) y un **Blob**, y conectá los dos al proyecto en todos los entornos. Eso define solo
-   `DATABASE_URL` y `BLOB_READ_WRITE_TOKEN`.
+   Marketplace) y conectala al proyecto en todos los entornos. Eso define `DATABASE_URL`. Las fotos quedan
+   en esa base. Un **Blob** (`BLOB_READ_WRITE_TOKEN`) hace falta solo para subir videos.
 4. **Variables** (*Settings, Environment Variables*):
 
    | Variable | Para qué |
@@ -238,7 +238,7 @@ src/app/api/sync/       disparo de la importación (cron de Vercel o externo)
 src/app/media/[name]/   sirve las fotos subidas
 src/components/site/    piezas del sitio público
 src/components/admin/   formularios y piezas del panel
-src/lib/                datos (store: archivo o Postgres), sesión (auth), imágenes (disco o Blob),
+src/lib/                datos (store: archivo o Postgres), sesión (auth), imágenes (base o disco),
                         YouTube (live), revisión periódica (pendientes, scheduler),
                         importación (sync, feeds, meta, webhook) y descargas seguras (red)
 public/brand/           logo vectorizado y imagen para redes
