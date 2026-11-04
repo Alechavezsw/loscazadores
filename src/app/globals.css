@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  /* Las etiquetas y el lema que antes iban en monoespaciada ahora también llevan la tipografía de la marca. */
+  --font-mono: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  /* Solo para direcciones, claves y códigos en el panel, donde sí conviene monoespaciada. */
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Los títulos en negrita pesan como el «Heavy» del logo. */
+  --font-weight-bold: 800;
+
+  /* Negros del sistema */
+  --color-ink: #000000;
+  --color-ink-1: #181818;
+  --color-ink-2: #1f1f1f;
+  --color-ink-3: #272727;
+  --color-ink-4: #313131;
+
+  --color-paper: #f5f4f0;
+  --color-line: #e3e1da;
+
+  /* Rojo de la marca */
+  --color-hunter: #e11d2a;
+  --color-hunter-dark: #b8121e;
+
+  /* Colores de cada red */
+  --color-wa: #1fa855;
+  --color-fb: #1877f2;
+  --color-yt: #e00000;
+  --color-ig: #dd2a7b;
+
+  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --animate-marquee: marquee 48s linear infinite;
+  --animate-scan: scan 5s var(--ease-fluid) infinite;
+  --animate-pulse-ring: pulse-ring 1.8s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+  --animate-shine: shine 7s ease-in-out infinite;
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes scan {
+    0% {
+      transform: translateX(-100%);
+    }
+    60%,
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
+    }
+  }
+  @keyframes shine {
+    0%,
+    35% {
+      background-position: 130% 0;
+    }
+    100% {
+      background-position: -30% 0;
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-hunter);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-hunter);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+/* El logo se usa como máscara para poder pintarlo del color que haga falta. */
+.logo-mask {
+  -webkit-mask: url("/brand/logo.svg") center / contain no-repeat;
+  mask: url("/brand/logo.svg") center / contain no-repeat;
+  aspect-ratio: 611.5 / 256;
+}
+
+.logo-shine {
+  background-color: #fff;
+  background-image: linear-gradient(105deg, transparent 38%, rgb(225 29 42 / 0.95) 50%, transparent 62%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  background-position: 130% 0;
+  animation: var(--animate-shine);
+}
+
+/* Tramas de puntos para dar textura a las superficies planas (cabecera, portadas sin foto, tarjetas negras y rojas). */
+.trama {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='2' cy='2' r='1.5' fill='%23fff' fill-opacity='.12'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
+}
+.trama-fuerte {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='2' cy='2' r='1.5' fill='%23fff' fill-opacity='.22'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
+}
+
+/* Escritura de máquina para el lema: se anima con CSS y no depende de JavaScript. */
+.typewriter {
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  animation: typing 2.6s steps(var(--chars, 36)) 0.9s forwards;
+}
+@keyframes typing {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 4px;
+  vertical-align: -0.12em;
+  background: var(--color-hunter);
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Reproductor de la radio: barras del ecualizador (la altura y el ritmo de cada una se ponen en línea) y entrada. */
+.eq-barra {
+  animation: eq 0.9s ease-in-out infinite;
+}
+@keyframes eq {
+  0%,
+  100% {
+    transform: scaleY(0.2);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.radio-entra {
+  animation: radio-entra 0.9s var(--ease-fluid) both;
+}
+@keyframes radio-entra {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Panel de estadísticas: colores de los gráficos (validados con el script de la guía de dataviz sobre blanco). */
+.viz {
+  --viz-serie-1: #2a78d6;
+  --viz-serie-2: #eb6834;
+  --viz-tinta: #0b0b0b;
+  --viz-tinta-2: #52514e;
+  --viz-apagado: #898781;
+  --viz-grilla: #e1e0d9;
+  --viz-base: #c3c2b7;
+  --viz-superficie: #ffffff;
+  --viz-sube: #006300;
+  --viz-baja: #d03b3b;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .typewriter {
+    clip-path: none;
+    animation: none;
+  }
+  .logo-shine,
+  .caret::after {
+    animation: none;
+  }
+  .eq-barra,
+  .radio-entra {
+    animation: none;
+  }
+  .ticker-track {
+    animation: none !important;
+  }
+}
