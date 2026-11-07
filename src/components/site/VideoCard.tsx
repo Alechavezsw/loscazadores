@@ -9,7 +9,7 @@ import { VideoPortada } from "./VideoPortada";
 export function VideoCard({ p }: { p: PiezaSC }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white transition-all duration-700 ease-fluid hover:-translate-y-2 hover:shadow-xl">
-      <Link href={`/videos/${p.slug}`} className="flex h-full flex-col">
+      <Link href={`/sin-censura/${p.slug}`} className="flex h-full flex-col">
         <div className="relative aspect-video overflow-hidden bg-ink-1">
           <VideoPortada p={p} className="transition-transform duration-700 ease-fluid group-hover:scale-105" />
           <span

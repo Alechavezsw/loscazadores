@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Editar video" };
 // Lee la sesión en cada pedido, así que no puede ser una navegación instantánea.
 export const instant = false;
 
-export default async function EditarVideo({ params }: PageProps<"/admin/videos/[id]">) {
+export default async function EditarVideo({ params }: PageProps<"/semiton/videos/[id]">) {
   await requerirAdmin();
   const { id } = await params;
   const { sinCensura } = await readDb();
@@ -24,7 +24,7 @@ export default async function EditarVideo({ params }: PageProps<"/admin/videos/[
     <>
       <TituloPagina titulo="Editar video" bajada={pieza.titulo}>
         {pieza.publicada && pieza.tipo === "video" ? (
-          <Link href={`/videos/${pieza.slug}`} target="_blank" className={botonSecundario}>
+          <Link href={`/sin-censura/${pieza.slug}`} target="_blank" className={botonSecundario}>
             Ver en el sitio
             <ArrowUpRight className="size-4" aria-hidden />
           </Link>

@@ -30,7 +30,7 @@ export function TaglineReveal({ etiqueta, texto, className }: { etiqueta: string
   }, []);
 
   return (
-    <section aria-label={etiqueta} className={cn("relative overflow-hidden bg-ink px-4 py-24 text-white md:px-6", className)}>
+    <section aria-label={etiqueta} className={cn("relative overflow-hidden px-4 py-24 text-white md:px-6", className)}>
       {/* La lupa de la marca, enorme y apenas visible, detrás de la frase. */}
       <Mark mango="#313131" className="pointer-events-none absolute -right-16 top-8 size-96 text-white/5 md:size-128" />
       <div className="relative mx-auto max-w-5xl">

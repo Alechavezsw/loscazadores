@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { WarningCircle } from "@phosphor-icons/react/ssr";
-import { desactivarWebhook, generarClaveWebhook, type FormState } from "@/app/admin/actions";
+import { desactivarWebhook, generarClaveWebhook, type FormState } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import { ConfirmButton } from "./ConfirmButton";
 import { CopiarCampo } from "./CopiarCampo";

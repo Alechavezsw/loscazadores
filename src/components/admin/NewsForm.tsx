@@ -3,7 +3,7 @@
 import { useHidratado } from "@/lib/use-hidratado";
 import Link from "next/link";
 import { startTransition, useActionState, useState } from "react";
-import { guardarNoticia, type FormState } from "@/app/admin/actions";
+import { guardarNoticia, type FormState } from "@/app/semiton/actions";
 import { CANAL_UI } from "@/components/site/canales";
 import { cn } from "@/lib/cn";
 import { CANALES, CATEGORIAS, ESPACIO_INFO, ESPACIOS, type Canal, type Noticia } from "@/lib/types";
@@ -97,7 +97,7 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
             id="categoria"
             etiqueta="Categoría"
             error={errores.categoria}
-            ayuda="Servicios Sociales, Comunidad, Solidario, Eventos, Carta Abierta y Entrevista son secciones del sitio: la nota aparece también en la página de su sección."
+            ayuda="Servicios Sociales, Comunidad, Solidario, Eventos (y Espectáculos), Carta Abierta, Entrevista, Tapá mi número y Cartas de la Vieja Pocha son secciones del sitio: la nota aparece también en la página de su sección."
           >
             <select
               id="categoria"
@@ -119,7 +119,7 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
             id="espacio"
             etiqueta="Espacio de la portada"
             error={errores.espacio}
-            ayuda="Si la noticia es de Viva Feria o de Servicios, va a su propio espacio en lugar de las últimas noticias."
+            ayuda="Si la noticia es de Servicios, va a su propio espacio en lugar de las últimas noticias."
           >
             <select id="espacio" name="espacio" defaultValue={noticia?.espacio ?? ""} className={input}>
               <option value="">Ninguno (últimas noticias)</option>
@@ -205,7 +205,7 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
           <button type="submit" disabled={pendiente || !hidratado || subiendoVideo} className={botonPrimario}>
             {subiendoVideo ? "Esperá, se está subiendo el video…" : pendiente ? "Guardando…" : noticia ? "Guardar cambios" : "Publicar noticia"}
           </button>
-          <Link href="/admin/noticias" className={botonSecundario}>
+          <Link href="/semiton/noticias" className={botonSecundario}>
             Cancelar
           </Link>
         </div>

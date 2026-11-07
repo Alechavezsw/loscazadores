@@ -77,5 +77,5 @@ export async function esAdmin() {
 
 /** Cortar acá cualquier página o acción del panel si no hay sesión. */
 export async function requerirAdmin() {
-  if (!(await esAdmin())) redirect("/admin/login");
+  if (!(await esAdmin())) redirect("/semiton/login");
 }

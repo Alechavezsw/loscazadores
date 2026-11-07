@@ -10,7 +10,7 @@ import {
   probarMeta,
   sincronizarAhora,
   type FormState,
-} from "@/app/admin/actions";
+} from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import { CATEGORIAS } from "@/lib/types";
 import { ConfirmButton } from "./ConfirmButton";

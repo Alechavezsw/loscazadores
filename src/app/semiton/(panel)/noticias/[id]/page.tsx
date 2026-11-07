@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Editar noticia" };
 // Lee la sesión en cada pedido, así que no puede ser una navegación instantánea.
 export const instant = false;
 
-export default async function EditarNoticia({ params }: PageProps<"/admin/noticias/[id]">) {
+export default async function EditarNoticia({ params }: PageProps<"/semiton/noticias/[id]">) {
   await requerirAdmin();
   const { id } = await params;
   const { noticias } = await readDb();

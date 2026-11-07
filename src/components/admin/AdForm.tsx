@@ -3,7 +3,7 @@
 import { useHidratado } from "@/lib/use-hidratado";
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useRef } from "react";
-import { guardarAnuncio, type FormState } from "@/app/admin/actions";
+import { guardarAnuncio, type FormState } from "@/app/semiton/actions";
 import { SLOT_NOMBRE, SLOTS, type Anuncio } from "@/lib/types";
 import { ImagenCampo } from "./ImagenCampo";
 import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "./ui";
@@ -75,7 +75,7 @@ export function AdForm({ anuncio }: { anuncio?: Anuncio }) {
             ayuda={
               editando
                 ? "Tocá la foto para cambiarla por otra. Si no elegís ninguna, se queda la actual."
-                : "Lateral: vertical, unos 224 por 800 px. Promociones: horizontal 4:3, unos 800 por 600 px."
+                : "Banners horizontales: 970 por 250 px. Lateral: vertical, unos 224 por 800 px. Promociones: horizontal 4:3, unos 800 por 600 px."
             }
           />
         </div>
@@ -85,7 +85,7 @@ export function AdForm({ anuncio }: { anuncio?: Anuncio }) {
             {pendiente ? "Guardando…" : editando ? "Guardar cambios" : "Guardar anuncio"}
           </button>
           {editando ? (
-            <Link href="/admin/publicidad" className={botonSecundario}>
+            <Link href="/semiton/publicidad" className={botonSecundario}>
               Cancelar
             </Link>
           ) : null}

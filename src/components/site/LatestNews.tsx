@@ -19,7 +19,8 @@ export function LatestNews({ noticias }: { noticias: Noticia[] }) {
   const abajo = resto.slice(2, 5);
 
   return (
-    <section aria-labelledby="ultimas-titulo" className="mx-auto w-full max-w-[1440px] scroll-mt-24 px-4 pb-16 md:px-6 md:pb-24">
+    <section aria-labelledby="ultimas-titulo" className="scroll-mt-24 px-4 py-16 md:px-6 md:py-24">
+      <div className="mx-auto w-full max-w-[1440px]">
       <Reveal>
         <SectionTitle id="ultimas-titulo" eyebrow="Lo que pasa en tu barrio" action={{ href: "/noticias", label: "Ver todas las noticias" }}>
           Últimas noticias
@@ -62,6 +63,7 @@ export function LatestNews({ noticias }: { noticias: Noticia[] }) {
           <p className="max-w-md text-base text-ink/70">Cuando subamos la primera nota, la vas a ver acá.</p>
         </div>
       )}
+      </div>
     </section>
   );
 }

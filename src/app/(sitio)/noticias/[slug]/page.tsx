@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ArrowLeft, ArrowUpRight } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
 import { BrandCover, Photo, SectionTitle, Skeleton } from "@/components/site/Brand";
+import { JsonLd } from "@/components/site/JsonLd";
 import { CANAL_UI } from "@/components/site/canales";
 import { Compartir } from "@/components/site/Compartir";
 import { Incrustados } from "@/components/site/Incrustados";
@@ -14,24 +15,23 @@ import { srcImagen, srcImagenAbsoluto, srcVideo } from "@/lib/imagen-url";
 import { getNoticia, getNoticias } from "@/lib/queries";
 import { CANALES, type Noticia } from "@/lib/types";
 import { embedFacebook, embedInstagram, idVideoYoutube, normalizarEnlace } from "@/lib/urls";
+import { metaPagina } from "@/lib/seo";
 import { urlSitio } from "@/lib/sitio";
 
 export async function generateMetadata({ params }: PageProps<"/noticias/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const n = await getNoticia(slug);
-  if (!n) return { title: "Noticia no encontrada" };
-  const descripcion = resumen(n.cuerpo, 160);
-  return {
-    title: n.titulo,
-    description: descripcion,
-    openGraph: {
-      type: "article",
-      title: n.titulo,
-      description: descripcion,
-      publishedTime: n.creada,
-      images: [n.imagen ? srcImagen(n.imagen) : "/brand/og.png"],
-    },
-  };
+  if (!n) return { title: "Noticia no encontrada", robots: { index: false, follow: false } };
+  return metaPagina({
+    titulo: n.titulo,
+    descripcion: resumen(n.cuerpo, 160) || n.titulo,
+    ruta: `/noticias/${n.slug}`,
+    imagen: n.imagen,
+    tipo: "article",
+    publicado: n.creada,
+    actualizado: n.actualizada,
+    seccion: n.categoria,
+  });
 }
 
 function Cargando() {
@@ -134,17 +134,24 @@ async function Articulo({ params }: { params: PageProps<"/noticias/[slug]">["par
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: n.titulo,
+    description: resumen(n.cuerpo, 160) || n.titulo,
     datePublished: n.creada,
     dateModified: n.actualizada,
-    image: n.imagen ? [srcImagenAbsoluto(n.imagen, sitio)] : [`${sitio}/brand/og.png`],
-    author: { "@type": "Organization", name: "Los Cazadores de Noticias" },
-    publisher: { "@type": "Organization", name: "Los Cazadores de Noticias" },
+    articleSection: n.categoria,
+    image: [n.imagen ? srcImagenAbsoluto(n.imagen, sitio) : `${sitio}/brand/og.png`],
+    mainEntityOfPage: url,
+    author: { "@type": "Organization", name: "Los Cazadores de Noticias", url: sitio },
+    publisher: {
+      "@type": "Organization",
+      name: "Los Cazadores de Noticias",
+      logo: { "@type": "ImageObject", url: `${sitio}/brand/og.png` },
+    },
   };
 
   return (
     <>
       <article className="mx-auto w-full max-w-3xl px-4 pb-16 pt-32 md:pt-40">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+        <JsonLd datos={jsonLd} />
 
         <Reveal immediate y={24}>
           <Link

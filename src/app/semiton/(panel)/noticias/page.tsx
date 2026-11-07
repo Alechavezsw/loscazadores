@@ -25,7 +25,7 @@ const AVISOS: Record<string, string> = {
   ejemplos: "Contenido de ejemplo eliminado.",
 };
 
-export default async function ListaNoticias({ searchParams }: PageProps<"/admin/noticias">) {
+export default async function ListaNoticias({ searchParams }: PageProps<"/semiton/noticias">) {
   await requerirAdmin();
   const { msg } = await searchParams;
   const aviso = typeof msg === "string" ? AVISOS[msg] : undefined;
@@ -35,7 +35,7 @@ export default async function ListaNoticias({ searchParams }: PageProps<"/admin/
   return (
     <>
       <TituloPagina titulo="Noticias" bajada="Todo lo que cargaste, publicado o en borrador.">
-        <Link href="/admin/noticias/nueva" className={botonPrimario}>
+        <Link href="/semiton/noticias/nueva" className={botonPrimario}>
           <Plus weight="bold" className="size-5" aria-hidden />
           Nueva noticia
         </Link>
@@ -52,7 +52,7 @@ export default async function ListaNoticias({ searchParams }: PageProps<"/admin/
           <Newspaper className="size-10 text-ink/30" aria-hidden />
           <p className="text-xl font-bold">Todavía no cargaste ninguna noticia</p>
           <p className="max-w-md text-base text-ink/70">Cargá la primera y va a aparecer en la portada y en la columna de cada red que marques.</p>
-          <Link href="/admin/noticias/nueva" className={`${botonPrimario} mt-2`}>
+          <Link href="/semiton/noticias/nueva" className={`${botonPrimario} mt-2`}>
             Cargar la primera
           </Link>
         </div>
@@ -76,7 +76,7 @@ export default async function ListaNoticias({ searchParams }: PageProps<"/admin/
                     {n.urgente ? <span className="rounded-full bg-hunter px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">Última hora</span> : null}
                     {tieneVideo(n) ? <span className="rounded-full bg-fb/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-[#0b4fb3]">Video</span> : null}
                     {n.destacada ? <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">Destacada</span> : null}
-                    {n.espacio ? <span className="rounded-full bg-hunter/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-hunter-dark">{ESPACIO_INFO[n.espacio].nombre}</span> : null}
+                    {n.espacio ? <span className="rounded-full bg-hunter/15 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-hunter-dark">{ESPACIO_INFO[n.espacio]?.nombre ?? "Espacio retirado"}</span> : null}
                     {n.ejemplo ? <span className="rounded-full border border-line px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-ink/60">Ejemplo</span> : null}
                   </div>
                   <p className="mt-1 truncate text-base font-semibold">{n.titulo}</p>
@@ -96,7 +96,7 @@ export default async function ListaNoticias({ searchParams }: PageProps<"/admin/
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/admin/noticias/${n.id}`} className={`${botonSecundario} px-3 py-1 text-sm`}>
+                <Link href={`/semiton/noticias/${n.id}`} className={`${botonSecundario} px-3 py-1 text-sm`}>
                   <PencilSimple className="size-4" aria-hidden />
                   Editar
                 </Link>

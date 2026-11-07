@@ -16,7 +16,7 @@ export function soloDigitos(valor: string | null | undefined) {
   return (valor ?? "").replace(/\D+/g, "");
 }
 
-/** 5492645105441 → "264 510-5441" (celular argentino sin el 54 ni el 9). Otros formatos se muestran como +número. */
+/** 5492645075475 → "264 507-5475" (celular argentino sin el 54 ni el 9). Otros formatos se muestran como +número. */
 export function telefonoLegible(numero: string) {
   const n = soloDigitos(numero);
   if (/^549\d{10}$/.test(n)) {

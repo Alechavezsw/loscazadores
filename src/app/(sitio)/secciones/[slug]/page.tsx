@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SeccionPagina } from "@/components/site/SeccionPagina";
+import { metaPagina } from "@/lib/seo";
 import { SECCIONES, seccionPorSlug } from "@/lib/types";
 
 export function generateStaticParams() {
@@ -11,8 +12,12 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/secciones/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const seccion = seccionPorSlug(slug);
-  if (!seccion) return { title: "No encontrado" };
-  return { title: seccion.nombre, description: seccion.bajada };
+  if (!seccion) return { title: "No encontrado", robots: { index: false, follow: false } };
+  return metaPagina({
+    titulo: seccion.nombre,
+    descripcion: seccion.bajada,
+    ruta: `/secciones/${seccion.slug}`,
+  });
 }
 
 async function Contenido({ params }: { params: PageProps<"/secciones/[slug]">["params"] }) {

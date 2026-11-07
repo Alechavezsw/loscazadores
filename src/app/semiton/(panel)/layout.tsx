@@ -12,7 +12,7 @@ async function Estructura({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="flex flex-col gap-6 bg-ink-1 p-4 text-white md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:p-6">
         <div className="flex items-center justify-between gap-4 md:flex-col md:items-start md:gap-2">
-          <Link href="/admin" aria-label="Panel, ir al resumen">
+          <Link href="/semiton" aria-label="Panel, ir al resumen">
             <Logo className="w-32 md:w-40" />
           </Link>
           <p className="font-mono text-xs uppercase tracking-widest text-white/50">Panel</p>

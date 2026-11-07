@@ -1,9 +1,11 @@
 import { Reveal } from "@/components/Reveal";
+import { FondoNoche } from "./Fondo";
 
 /** Cabecera negra de las páginas interiores. Deja lugar arriba para la píldora de navegación. */
 export function PageHeader({ etiqueta, titulo, bajada }: { etiqueta: string; titulo: string; bajada?: string }) {
   return (
-    <header className="relative overflow-hidden bg-ink px-4 pb-12 pt-32 text-white md:px-6 md:pb-16 md:pt-40">
+    <header className="relative isolate overflow-hidden bg-ink px-4 pb-12 pt-32 text-white md:px-6 md:pb-16 md:pt-40">
+      <FondoNoche lado="der" />
       <div className="mx-auto max-w-[1440px]">
         <Reveal immediate y={24}>
           <p className="font-mono text-sm uppercase tracking-widest text-hunter">{etiqueta}</p>

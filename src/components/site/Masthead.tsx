@@ -1,17 +1,14 @@
 import { ArrowDown, WhatsappLogo } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
 import { Logo } from "./Brand";
+import { FondoNoche } from "./Fondo";
 import { MastheadFX } from "./MastheadFX";
 
 export function Masthead({ lema, contactoHref }: { lema: string; contactoHref: string }) {
   return (
     <div className="relative isolate overflow-hidden bg-ink text-white">
+      <FondoNoche />
       <MastheadFX />
-      {/* Trama de puntos que se desvanece hacia los bordes. */}
-      <div
-        aria-hidden
-        className="trama pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_70%_80%_at_50%_45%,#000,transparent)]"
-      />
 
       <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pb-16 pt-24 text-center md:pb-24 md:pt-32">
         <h1 className="w-full max-w-[840px]">

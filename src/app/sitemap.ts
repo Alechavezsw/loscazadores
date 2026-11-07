@@ -11,11 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: sitio, changeFrequency: "hourly", priority: 1 },
     { url: `${sitio}/noticias`, changeFrequency: "hourly", priority: 0.8 },
     { url: `${sitio}/en-vivo`, changeFrequency: "daily", priority: 0.6 },
-    { url: `${sitio}/videos`, changeFrequency: "daily", priority: 0.7 },
+    { url: `${sitio}/sin-censura`, changeFrequency: "daily", priority: 0.7 },
     ...ESPACIOS.map((e) => ({ url: `${sitio}${ESPACIO_INFO[e].ruta}`, changeFrequency: "daily" as const, priority: 0.7 })),
     ...SECCIONES.map((s) => ({ url: `${sitio}${rutaSeccion(s)}`, changeFrequency: "daily" as const, priority: 0.7 })),
     ...piezas.map((p) => ({
-      url: `${sitio}/videos/${p.slug}`,
+      url: `${sitio}/sin-censura/${p.slug}`,
       lastModified: p.actualizada,
       changeFrequency: "weekly" as const,
       priority: 0.6,

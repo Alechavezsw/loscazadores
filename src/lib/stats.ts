@@ -51,7 +51,7 @@ const ESTATICAS = new Set([
   "/noticias",
   "/en-vivo",
   "/videos",
-  "/viva-feria",
+  "/sin-censura",
   "/si-san-juan",
   "/privacidad",
   "/terminos",
@@ -67,7 +67,8 @@ async function normalizarRuta(crudo: unknown): Promise<string | null> {
   if (r.length > 1) r = r.replace(/\/+$/, "");
   if (ESTATICAS.has(r)) return r;
 
-  const m = r.match(/^\/(noticias|videos)\/([a-z0-9-]{1,100})$/);
+  // /videos es el nombre anterior de /sin-censura y sigue andando: las dos cuentan como páginas de videos.
+  const m = r.match(/^\/(noticias|videos|sin-censura)\/([a-z0-9-]{1,100})$/);
   if (m) {
     const slugs = m[1] === "noticias" ? (await getNoticias()).map((n) => n.slug) : (await getVideos()).map((p) => p.slug);
     if (slugs.includes(m[2])) return r;

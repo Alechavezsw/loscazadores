@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { NewsBrowser } from "@/components/site/NewsBrowser";
 import { PageHeader } from "@/components/site/PageHeader";
 import { getNoticias } from "@/lib/queries";
+import { metaPagina } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Noticias",
-  description: "Todas las noticias de tu barrio: lo último que publicamos en WhatsApp, Instagram, Facebook y YouTube.",
-};
+export const metadata: Metadata = metaPagina({
+  titulo: "Noticias",
+  descripcion: "Todas las noticias de tu barrio: lo último que publicamos en WhatsApp, Instagram, Facebook y YouTube.",
+  ruta: "/noticias",
+});
 
 export default async function Noticias() {
   const noticias = await getNoticias();

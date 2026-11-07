@@ -1,28 +1,25 @@
 import { Quotes, WhatsappLogo } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
-import { cn } from "@/lib/cn";
 import type { Ajustes } from "@/lib/types";
 import { telefonoLegible } from "@/lib/urls";
 
 /**
  * «Tu historia también cuenta»: invitación a mandar información por WhatsApp, con el número grande y con
  * enlace directo. El título y el texto (que va entre comillas decorativas, una de cada lado) se editan desde
- * Ajustes. `oscuro` es para cuando se pone sobre un fondo negro.
+ * Ajustes. No lleva fondo propio: se apoya en el de la franja donde se pone.
  */
 export function HistoriaCta({
   ajustes,
   contactoHref,
-  oscuro = false,
 }: {
   ajustes: Pick<Ajustes, "historiaTitulo" | "historiaTexto" | "whatsappContacto">;
   contactoHref: string;
-  oscuro?: boolean;
 }) {
   const numero = telefonoLegible(ajustes.whatsappContacto);
   if (!contactoHref || !numero) return null;
 
   return (
-    <section aria-labelledby="historia-titulo" className={cn("px-4 pb-16 md:px-6 md:pb-24", oscuro && "bg-ink")}>
+    <section aria-labelledby="historia-titulo" className="px-4 pb-16 md:px-6 md:pb-24">
       <Reveal>
         <div className="trama relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-hunter text-white">
           <WhatsappLogo

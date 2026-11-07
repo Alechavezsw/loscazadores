@@ -26,11 +26,11 @@ const FIJAS: Record<string, string> = {
   "/": "Portada",
   "/noticias": "Archivo de noticias",
   "/en-vivo": "En vivo",
-  "/videos": "Videos (la sección)",
-  "/viva-feria": "Viva Feria",
+  "/sin-censura": "Sin censura (la sección)",
+  "/videos": "Videos (dirección anterior de la sección)",
+  "/viva-feria": "Viva Feria (página retirada)",
   "/si-san-juan": "Servicios",
   ...Object.fromEntries(SECCIONES.map((s) => [rutaSeccion(s), `Sección: ${s.nombre}`])),
-  "/sin-censura": "Videos (dirección anterior)",
   "/privacidad": "Privacidad",
   "/terminos": "Términos",
   "/otras": "Otras páginas",
@@ -48,7 +48,7 @@ function Seccion({ titulo, bajada, children, className }: { titulo: string; baja
   );
 }
 
-export default async function Estadisticas({ searchParams }: PageProps<"/admin/estadisticas">) {
+export default async function Estadisticas({ searchParams }: PageProps<"/semiton/estadisticas">) {
   await requerirAdmin();
   const { dias: pedido } = await searchParams;
   const rango = rangoDe(pedido);
@@ -64,7 +64,7 @@ export default async function Estadisticas({ searchParams }: PageProps<"/admin/e
     if (FIJAS[ruta]) return FIJAS[ruta];
     const [, seccion, slug] = ruta.split("/");
     if (seccion === "noticias") return noticias.get(slug)?.titulo ?? "Noticia eliminada";
-    if (seccion === "videos") return `Videos: ${piezas.get(slug)?.titulo ?? "video eliminado"}`;
+    if (seccion === "videos" || seccion === "sin-censura") return `Videos: ${piezas.get(slug)?.titulo ?? "video eliminado"}`;
     return ruta;
   };
   const enlaceDe = (ruta: string) => (ruta === "/otras" ? undefined : ruta);
@@ -91,7 +91,7 @@ export default async function Estadisticas({ searchParams }: PageProps<"/admin/e
       };
     });
   const sinCensura: ItemRanking[] = panel.paginas
-    .filter((x) => x.ruta.startsWith("/videos/"))
+    .filter((x) => x.ruta.startsWith("/sin-censura/") || x.ruta.startsWith("/videos/"))
     .slice(0, 5)
     .map((x) => ({
       etiqueta: nombreDe(x.ruta).replace(/^Videos: /, ""),
@@ -155,7 +155,7 @@ export default async function Estadisticas({ searchParams }: PageProps<"/admin/e
           {RANGOS.map((r) => (
             <Link
               key={r.id}
-              href={`/admin/estadisticas?dias=${r.id}`}
+              href={`/semiton/estadisticas?dias=${r.id}`}
               aria-current={r.id === rango.id ? "page" : undefined}
               className={cn(
                 "rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-700 ease-fluid active:scale-[0.98]",

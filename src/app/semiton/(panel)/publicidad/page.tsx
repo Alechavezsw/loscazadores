@@ -20,7 +20,7 @@ const AVISOS: Record<string, string> = {
   guardado: "Anuncio actualizado.",
 };
 
-export default async function Publicidad({ searchParams }: PageProps<"/admin/publicidad">) {
+export default async function Publicidad({ searchParams }: PageProps<"/semiton/publicidad">) {
   await requerirAdmin();
   const { msg } = await searchParams;
   const aviso = typeof msg === "string" ? AVISOS[msg] : undefined;
@@ -32,7 +32,7 @@ export default async function Publicidad({ searchParams }: PageProps<"/admin/pub
     <>
       <TituloPagina
         titulo="Publicidad"
-        bajada="Los laterales de las columnas y la grilla de promociones. Los espacios libres muestran una invitación a anunciar."
+        bajada="Los dos banners horizontales, los laterales de las columnas y la grilla de promociones. Los espacios libres muestran una invitación a anunciar."
       />
 
       {aviso ? (
@@ -64,7 +64,12 @@ export default async function Publicidad({ searchParams }: PageProps<"/admin/pub
                 <h2 id={`slot-${slot}`} className="text-xl font-bold tracking-tight">
                   {SLOT_NOMBRE[slot]}
                 </h2>
-                {slot !== "promo" ? (
+                {slot === "banner" || slot === "banner-2" ? (
+                  <p className="mb-4 text-sm text-ink/60">
+                    Se muestra el primer anuncio activo,{" "}
+                    {slot === "banner" ? "arriba de «Lo último en nuestras redes»." : "debajo del bloque «Comunidad»."}
+                  </p>
+                ) : slot !== "promo" ? (
                   <p className="mb-4 text-sm text-ink/60">En cada lateral se muestra el primer anuncio activo.</p>
                 ) : (
                   <p className="mb-4 text-sm text-ink/60">Se muestran hasta 8 anuncios activos en la grilla.</p>
@@ -94,7 +99,7 @@ export default async function Publicidad({ searchParams }: PageProps<"/admin/pub
                         })()}
                       </div>
                       <div className="mt-auto flex flex-wrap items-center gap-2">
-                        <Link href={`/admin/publicidad/${a.id}`} className={`${botonSecundario} px-3 py-1 text-sm`}>
+                        <Link href={`/semiton/publicidad/${a.id}`} className={`${botonSecundario} px-3 py-1 text-sm`}>
                           <PencilSimple className="size-4" aria-hidden />
                           Editar
                         </Link>

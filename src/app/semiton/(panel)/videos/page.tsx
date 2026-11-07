@@ -20,7 +20,7 @@ const AVISOS: Record<string, string> = {
   eliminada: "Video eliminado.",
 };
 
-export default async function ListaVideos({ searchParams }: PageProps<"/admin/videos">) {
+export default async function ListaVideos({ searchParams }: PageProps<"/semiton/videos">) {
   await requerirAdmin();
   const { msg } = await searchParams;
   const aviso = typeof msg === "string" ? AVISOS[msg] : undefined;
@@ -30,7 +30,7 @@ export default async function ListaVideos({ searchParams }: PageProps<"/admin/vi
   return (
     <>
       <TituloPagina titulo="Videos" bajada={`Los videos de la sección «${ajustes.nombreVideos}». El nombre se cambia desde Ajustes.`}>
-        <Link href="/admin/videos/nuevo" className={botonPrimario}>
+        <Link href="/semiton/videos/nuevo" className={botonPrimario}>
           <Plus weight="bold" className="size-5" aria-hidden />
           Nuevo video
         </Link>
@@ -47,7 +47,7 @@ export default async function ListaVideos({ searchParams }: PageProps<"/admin/vi
           <Play weight="fill" className="size-10 text-ink/30" aria-hidden />
           <p className="text-xl font-bold">Todavía no cargaste ningún video</p>
           <p className="max-w-md text-base text-ink/70">Cargá el primero y va a aparecer en la sección y en la portada.</p>
-          <Link href="/admin/videos/nuevo" className={`${botonPrimario} mt-2`}>
+          <Link href="/semiton/videos/nuevo" className={`${botonPrimario} mt-2`}>
             Cargar el primero
           </Link>
         </div>
@@ -82,7 +82,7 @@ export default async function ListaVideos({ searchParams }: PageProps<"/admin/vi
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/admin/videos/${p.id}`} className={`${botonSecundario} px-3 py-1 text-sm`}>
+                <Link href={`/semiton/videos/${p.id}`} className={`${botonSecundario} px-3 py-1 text-sm`}>
                   <PencilSimple className="size-4" aria-hidden />
                   Editar
                 </Link>

@@ -11,13 +11,6 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  // La sección de videos se llamaba Sin censura y vivía en /sin-censura: las direcciones viejas siguen andando.
-  async redirects() {
-    return [
-      { source: "/sin-censura", destination: "/videos", permanent: true },
-      { source: "/sin-censura/:slug", destination: "/videos/:slug", permanent: true },
-    ];
-  },
   experimental: {
     // Las fotos de las noticias viajan dentro de la server action del panel.
     serverActions: { bodySizeLimit: "14mb" },

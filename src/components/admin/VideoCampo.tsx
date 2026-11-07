@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { VideoCamera, WarningCircle } from "@phosphor-icons/react/ssr";
-import { descartarVideoSubido } from "@/app/admin/actions";
+import { descartarVideoSubido } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import { srcVideo } from "@/lib/imagen-url";
 import { MAX_VIDEO_BD_BYTES, MAX_VIDEO_BYTES, TIPOS_VIDEO, TROZO_VIDEO_BYTES, type ModoVideo } from "@/lib/video-limites";

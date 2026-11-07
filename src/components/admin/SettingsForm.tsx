@@ -2,7 +2,7 @@
 
 import { useHidratado } from "@/lib/use-hidratado";
 import { startTransition, useActionState, useRef, useState } from "react";
-import { guardarAjustes, probarEnVivo, type FormState, type PruebaLive } from "@/app/admin/actions";
+import { guardarAjustes, probarEnVivo, type FormState, type PruebaLive } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import type { Ajustes, YoutubeModo } from "@/lib/types";
 import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "./ui";

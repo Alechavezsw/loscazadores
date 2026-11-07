@@ -50,7 +50,7 @@ export default async function Resumen() {
   return (
     <>
       <TituloPagina titulo="Resumen" bajada="Lo que está publicado ahora y lo que viene.">
-        <Link href="/admin/noticias/nueva" className={botonPrimario}>
+        <Link href="/semiton/noticias/nueva" className={botonPrimario}>
           <Plus weight="bold" className="size-5" aria-hidden />
           Nueva noticia
         </Link>
@@ -100,7 +100,7 @@ export default async function Resumen() {
                 </div>
               ))}
             </dl>
-            <Link href="/admin/estadisticas" className={botonSecundario}>
+            <Link href="/semiton/estadisticas" className={botonSecundario}>
               Ver estadísticas
               <ArrowRight className="size-4" aria-hidden />
             </Link>
@@ -122,7 +122,7 @@ export default async function Resumen() {
               {live.titulo ? ` “${live.titulo}”` : ""}
             </p>
           </div>
-          <Link href="/admin/ajustes" className={botonSecundario}>
+          <Link href="/semiton/ajustes" className={botonSecundario}>
             Configurar
           </Link>
         </section>
@@ -132,7 +132,7 @@ export default async function Resumen() {
             <h2 id="ultimas" className="text-lg font-bold">
               Últimos cambios
             </h2>
-            <Link href="/admin/noticias" className="group flex items-center gap-1 text-sm font-semibold text-ink/70 hover:text-ink">
+            <Link href="/semiton/noticias" className="group flex items-center gap-1 text-sm font-semibold text-ink/70 hover:text-ink">
               Ver todas
               <ArrowRight className="size-4 transition-transform duration-700 ease-fluid group-hover:translate-x-1" aria-hidden />
             </Link>
@@ -142,7 +142,7 @@ export default async function Resumen() {
               {ultimas.map((n) => (
                 <li key={n.id}>
                   <Link
-                    href={`/admin/noticias/${n.id}`}
+                    href={`/semiton/noticias/${n.id}`}
                     className="flex items-center gap-4 py-3 transition-colors duration-700 ease-fluid hover:text-hunter"
                   >
                     <div className="size-12 shrink-0 overflow-hidden rounded bg-ink-1">

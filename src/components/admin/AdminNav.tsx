@@ -6,13 +6,13 @@ import { ArrowsClockwise, ChartBar, Gauge, Gear, Megaphone, Newspaper, Play } fr
 import { cn } from "@/lib/cn";
 
 const ITEMS = [
-  { href: "/admin", label: "Resumen", Icono: Gauge, exacto: true },
-  { href: "/admin/noticias", label: "Noticias", Icono: Newspaper, exacto: false },
-  { href: "/admin/videos", label: "Videos", Icono: Play, exacto: false },
-  { href: "/admin/estadisticas", label: "Estadísticas", Icono: ChartBar, exacto: false },
-  { href: "/admin/redes", label: "Redes", Icono: ArrowsClockwise, exacto: false },
-  { href: "/admin/publicidad", label: "Publicidad", Icono: Megaphone, exacto: false },
-  { href: "/admin/ajustes", label: "Ajustes", Icono: Gear, exacto: false },
+  { href: "/semiton", label: "Resumen", Icono: Gauge, exacto: true },
+  { href: "/semiton/noticias", label: "Noticias", Icono: Newspaper, exacto: false },
+  { href: "/semiton/videos", label: "Videos", Icono: Play, exacto: false },
+  { href: "/semiton/estadisticas", label: "Estadísticas", Icono: ChartBar, exacto: false },
+  { href: "/semiton/redes", label: "Redes", Icono: ArrowsClockwise, exacto: false },
+  { href: "/semiton/publicidad", label: "Publicidad", Icono: Megaphone, exacto: false },
+  { href: "/semiton/ajustes", label: "Ajustes", Icono: Gear, exacto: false },
 ] as const;
 
 export function AdminNav() {

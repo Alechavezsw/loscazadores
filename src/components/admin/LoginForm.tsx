@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { iniciarSesion, type FormState } from "@/app/admin/actions";
+import { iniciarSesion, type FormState } from "@/app/semiton/actions";
 import { botonPrimario, Campo, input, Mensaje } from "./ui";
 
 const INICIAL: FormState = { ok: false };

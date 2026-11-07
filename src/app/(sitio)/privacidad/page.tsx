@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/site/LegalPage";
+import { metaPagina } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Política de privacidad",
-  description: "Qué datos usa este sitio y cómo se cuidan.",
-};
+export const metadata: Metadata = metaPagina({
+  titulo: "Política de privacidad",
+  descripcion: "Qué datos usa este sitio y cómo se cuidan.",
+  ruta: "/privacidad",
+});
 
 export default function Privacidad() {
   return (

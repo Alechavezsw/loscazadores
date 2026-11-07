@@ -14,7 +14,7 @@ const enlaces = (nombreVideos: string) => [
   { href: "/", label: "Inicio" },
   { href: "/noticias", label: "Noticias" },
   { href: "/en-vivo", label: "En vivo" },
-  { href: "/videos", label: nombreVideos },
+  { href: "/sin-censura", label: nombreVideos },
 ];
 
 const RETRASOS = ["delay-100", "delay-150", "delay-200", "delay-300"];
@@ -85,7 +85,9 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
     };
   }, [seccionesAbiertas]);
 
-  const activo = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  // /videos es el nombre anterior de /sin-censura y sigue andando: también marca esa sección.
+  const activo = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href) || (href === "/sin-censura" && pathname.startsWith("/videos"));
   const enSecciones = pathname.startsWith("/secciones/");
 
   return (
@@ -106,7 +108,9 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
             className="flex items-center gap-2 rounded-full py-1 pl-2 pr-3 transition-colors duration-700 ease-fluid hover:bg-white/10"
           >
             <Mark className="size-6 text-white" />
-            <span className="text-sm font-semibold uppercase tracking-wide">Los Cazadores</span>
+            {/* En el celular el botón de la marca es el único camino a la portada: dice «Inicio». En pantallas grandes la lista ya trae su «Inicio». */}
+            <span className="text-sm font-semibold uppercase tracking-wide md:hidden">Inicio</span>
+            <span className="hidden text-sm font-semibold uppercase tracking-wide md:inline">Los Cazadores</span>
           </Link>
 
           <ul className="hidden items-center gap-1 md:flex">

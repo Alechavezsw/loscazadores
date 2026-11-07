@@ -21,26 +21,62 @@ export const CATEGORIAS = [
   "Eventos",
   "Carta Abierta",
   "Entrevista",
+  "Tapá mi número",
+  "Cartas de la Vieja Pocha",
   "Espectáculos",
 ] as const;
 
 export type Categoria = (typeof CATEGORIAS)[number];
 
 /**
- * Las secciones del sitio, en el orden en que se muestran en el menú. Cada una es una categoría de la noticia y
- * tiene su propia página (/secciones/<slug>) con todas las notas de esa categoría. Los textos de «bajada» son
- * provisorios: se ajustan acá.
+ * Las secciones del sitio, en el orden en que se muestran en el menú. Casi todas son una categoría de la noticia y
+ * tienen su propia página (/secciones/<slug>) con todas las notas de esa categoría. Los textos de «bajada» son
+ * provisorios (salvo los que dio el cliente): se ajustan acá.
  */
-export type Seccion = { slug: string; nombre: Categoria; bajada: string };
+export type Seccion = {
+  slug: string;
+  nombre: string;
+  bajada: string;
+  /** Otras categorías cuyas notas también van en esta sección, además de la que lleva su mismo nombre. */
+  tambien?: readonly Categoria[];
+  /** «medios»: en vez de notas, muestra logos y enlaces de medios aliados (ver MEDIOS_AMIGOS en lib/marcas.ts). */
+  tipo?: "medios";
+};
 
 export const SECCIONES: readonly Seccion[] = [
   { slug: "servicios-sociales", nombre: "Servicios Sociales", bajada: "Información y ayuda para los vecinos de San Juan." },
   { slug: "comunidad", nombre: "Comunidad", bajada: "Lo que pasa en los barrios y lo que hacen los vecinos." },
   { slug: "solidario", nombre: "Solidario", bajada: "Campañas, colectas y gestos solidarios." },
-  { slug: "eventos", nombre: "Eventos", bajada: "Lo que se viene y lo que pasó en San Juan." },
+  {
+    slug: "eventos",
+    nombre: "Eventos",
+    bajada: "Espectáculos y actividades. Incluye ferias, recitales, festivales y actividades culturales.",
+    // Las notas de espectáculos también son eventos.
+    tambien: ["Espectáculos"],
+  },
   { slug: "carta-abierta", nombre: "Carta Abierta", bajada: "Cartas abiertas que llegan a la redacción." },
   { slug: "entrevista", nombre: "Entrevista", bajada: "Charlas con los protagonistas de la noticia." },
+  {
+    slug: "tapa-mi-numero",
+    nombre: "Tapá mi número",
+    bajada: "Denuncias y reclamos con reserva de identidad. Mensajes de la gente con reserva de identidad.",
+  },
+  {
+    slug: "cartas-de-la-vieja-pocha",
+    nombre: "Cartas de la Vieja Pocha",
+    bajada: "Opiniones, comentarios, anécdotas e historias de nuestros vecinos. Espacio destinado a la participación de los lectores.",
+  },
+  {
+    slug: "medios-amigos",
+    nombre: "Medios amigos",
+    bajada: "Páginas web, radios, canales y redes sociales de medios aliados.",
+    tipo: "medios",
+  },
 ];
+
+/** ¿La nota va en esta sección? Por su categoría (o las que la sección suma). Las secciones de medios no tienen notas. */
+export const notaEnSeccion = (n: { categoria: string }, s: Seccion) =>
+  s.tipo !== "medios" && (n.categoria === s.nombre || (s.tambien ?? []).includes(n.categoria as Categoria));
 
 export const seccionPorSlug = (slug: string) => SECCIONES.find((s) => s.slug === slug);
 export const rutaSeccion = (s: Seccion) => `/secciones/${s.slug}`;
@@ -48,21 +84,16 @@ export const rutaSeccion = (s: Seccion) => `/secciones/${s.slug}`;
 /**
  * Espacios fijos de la portada que se alimentan con noticias propias: cada noticia puede pertenecer a uno
  * (o a ninguno, y entonces va a las últimas noticias). Se eligen desde el formulario de la noticia.
+ * Viva Feria fue un espacio y se retiró: las notas que lo tenían guardado conservan el valor "viva-feria", que ya no
+ * es un espacio válido (se las ve sin etiqueta y, al editarlas, quedan sin espacio).
  */
-export const ESPACIOS = ["viva-feria", "si-san-juan"] as const;
+export const ESPACIOS = ["si-san-juan"] as const;
 export type Espacio = (typeof ESPACIOS)[number];
 
 export const ESPACIO_INFO: Record<
   Espacio,
   { nombre: string; subtitulo: string; ruta: string; bajada: string; vacio: string }
 > = {
-  "viva-feria": {
-    nombre: "Viva Feria",
-    subtitulo: "Espacio de Emprendedores",
-    ruta: "/viva-feria",
-    bajada: "Todas las novedades de cada edición de Viva Feria, el espacio de los emprendedores sanjuaninos.",
-    vacio: "Cuando haya novedades de la próxima edición, las vas a ver acá.",
-  },
   "si-san-juan": {
     nombre: "Servicios",
     subtitulo: "Información social y gubernamental",
@@ -94,7 +125,7 @@ export type Noticia = {
   urgente: boolean;
   destacada: boolean;
   publicada: boolean;
-  /** Si pertenece a un espacio propio de la portada (Viva Feria, Servicios). */
+  /** Si pertenece a un espacio propio de la portada (hoy, Servicios). */
   espacio?: Espacio;
   /** Contenido de muestra para borrar desde el panel. */
   ejemplo: boolean;
@@ -135,10 +166,12 @@ export type PiezaSC = {
   actualizada: string;
 };
 
-export const SLOTS = ["lateral-izq", "lateral-der", "promo"] as const;
+export const SLOTS = ["banner", "banner-2", "lateral-izq", "lateral-der", "promo"] as const;
 export type SlotAnuncio = (typeof SLOTS)[number];
 
 export const SLOT_NOMBRE: Record<SlotAnuncio, string> = {
+  banner: "Banner horizontal 1 (arriba, antes de las redes)",
+  "banner-2": "Banner horizontal 2 (debajo del bloque Comunidad)",
   "lateral-izq": "Lateral izquierdo",
   "lateral-der": "Lateral derecho",
   promo: "Promociones",

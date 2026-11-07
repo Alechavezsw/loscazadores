@@ -2,17 +2,20 @@ import Link from "next/link";
 import { Newspaper } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/cn";
-import { getNoticias } from "@/lib/queries";
-import { rutaSeccion, SECCIONES, type Seccion } from "@/lib/types";
+import { getAjustes, getNoticias } from "@/lib/queries";
+import { notaEnSeccion, rutaSeccion, SECCIONES, type Seccion } from "@/lib/types";
+import { limpiarUrl } from "@/lib/urls";
+import { MediosAmigos } from "./MediosAmigos";
 import { NewsCard } from "./NewsCard";
 import { PageHeader } from "./PageHeader";
 
 /**
- * Página de una sección del sitio (Servicios Sociales, Comunidad, Solidario, Eventos, Carta Abierta, Entrevista):
- * todas las notas de esa categoría, de la más nueva a la más vieja, y los enlaces a las demás secciones.
+ * Página de una sección del sitio: todas las notas de esa categoría, de la más nueva a la más vieja, y los enlaces a
+ * las demás secciones. La de medios amigos no lista notas: muestra los logos con sus enlaces.
  */
 export async function SeccionPagina({ seccion }: { seccion: Seccion }) {
-  const noticias = (await getNoticias()).filter((n) => n.categoria === seccion.nombre);
+  const [todas, ajustes] = await Promise.all([getNoticias(), getAjustes()]);
+  const noticias = todas.filter((n) => notaEnSeccion(n, seccion));
 
   return (
     <>
@@ -37,7 +40,9 @@ export async function SeccionPagina({ seccion }: { seccion: Seccion }) {
           })}
         </nav>
 
-        {noticias.length > 0 ? (
+        {seccion.tipo === "medios" ? (
+          <MediosAmigos radioEnlace={limpiarUrl(ajustes.radioEnlace)} grande />
+        ) : noticias.length > 0 ? (
           <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {noticias.map((n, i) => (
               <li key={n.id} className="h-full">

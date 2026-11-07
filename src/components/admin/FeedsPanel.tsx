@@ -3,7 +3,7 @@
 import { useHidratado } from "@/lib/use-hidratado";
 import { startTransition, useActionState, useEffect, useRef } from "react";
 import { ArrowsClockwise, FacebookLogo, InstagramLogo, Rss } from "@phosphor-icons/react/ssr";
-import { agregarFeed, importarFeedAhora, quitarFeed, type FormState } from "@/app/admin/actions";
+import { agregarFeed, importarFeedAhora, quitarFeed, type FormState } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import { ConfirmButton } from "./ConfirmButton";
 import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "./ui";

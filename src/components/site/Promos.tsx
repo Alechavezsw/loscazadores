@@ -9,7 +9,8 @@ export function Promos({ anuncios, consultaHref }: { anuncios: Anuncio[]; consul
   const libres = Math.max(0, 4 - promos.length);
 
   return (
-    <section aria-labelledby="promos-titulo" className="mx-auto w-full max-w-[1440px] px-4 pb-16 md:px-6 md:pb-24">
+    <section aria-labelledby="promos-titulo" className="px-4 py-16 md:px-6 md:py-24">
+      <div className="mx-auto w-full max-w-[1440px]">
       <Reveal>
         <SectionTitle id="promos-titulo" eyebrow="Publicidad">Promociones</SectionTitle>
       </Reveal>
@@ -71,6 +72,7 @@ export function Promos({ anuncios, consultaHref }: { anuncios: Anuncio[]; consul
             </Reveal>
           );
         })}
+      </div>
       </div>
     </section>
   );

@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Editar anuncio" };
 // Lee la sesión en cada pedido, así que no puede ser una navegación instantánea.
 export const instant = false;
 
-export default async function EditarAnuncio({ params }: PageProps<"/admin/publicidad/[id]">) {
+export default async function EditarAnuncio({ params }: PageProps<"/semiton/publicidad/[id]">) {
   await requerirAdmin();
   const { id } = await params;
   const { anuncios } = await readDb();

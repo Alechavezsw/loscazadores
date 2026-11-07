@@ -12,7 +12,7 @@ import { VideoPrincipal } from "./VideoPrincipal";
  * letras blancas, para ponerlo sobre un fondo negro. Si se pasa `verTodo`, suma el botón hacia el listado.
  */
 export function VideoDestacado({ p, verTodo }: { p: PiezaSC; verTodo?: { href: string; texto: string } }) {
-  const href = `/videos/${p.slug}`;
+  const href = `/sin-censura/${p.slug}`;
   return (
     <div className="grid gap-8 text-white lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:items-center lg:gap-12">
       <VideoPrincipal portada={<VideoPortada p={p} />} reproductor={reproductorDe(p)} href={href} titulo={p.titulo} />

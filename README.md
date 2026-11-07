@@ -11,7 +11,7 @@ npm run dev -- -p 3030
 ```
 
 - Sitio: http://localhost:3030
-- Panel: http://localhost:3030/admin (la contraseña está en `.env.local`, variable `ADMIN_PASSWORD`)
+- Panel: http://localhost:3030/semiton (la contraseña está en `.env.local`, variable `ADMIN_PASSWORD`)
 
 Para producción: `npm run build` y `npm start`. Copiá `.env.example` a `.env.local` y completá
 `ADMIN_PASSWORD`, `SESSION_SECRET` y `NEXT_PUBLIC_SITE_URL`.
@@ -22,14 +22,25 @@ Para producción: `npm run build` y `npm start`. Copiá `.env.example` a `.env.l
   en qué columna de la portada aparece. Si se pega el enlace de la publicación original, el botón
   "Ver en Instagram / Facebook / …" la abre, y la nota muestra el embed oficial.
   "Última hora" va primero en la cinta roja (sus titulares son las noticias reales, no un texto de muestra) y
-  "Destacada" ocupa el lugar grande. El campo **Espacio de la portada** manda la noticia a Viva Feria o a Sí San
-  Juan: cada uno tiene su bloque en la portada y su página (`/viva-feria`, `/si-san-juan`), y esas noticias no se
-  repiten en las últimas noticias. Cada edición de Viva Feria es una noticia nueva con ese espacio.
-- **Videos**: la sección de videos (hoy "Sin censura"; vive en `/videos`, y `/sin-censura` redirige ahí). Solo
+  "Destacada" ocupa el lugar grande. El campo **Espacio de la portada** manda la noticia a Sí San Juan (Servicios),
+  que tiene su página (`/si-san-juan`) pero ya no tarjeta en la portada; esas noticias no se repiten en las últimas
+  noticias. En la portada, el bloque **Comunidad** muestra cinco tarjetas, de a dos por fila (la última, si queda
+  sola, ocupa todo el ancho), cada una con su propia sección: **Tapá mi número**, **Cartas de la Vieja Pocha** y
+  **Solidario** (notas de esa categoría, que no se repiten en las últimas noticias), **Eventos** (las notas de
+  Eventos y de Espectáculos, que sí se repiten) y **Medios amigos**
+  (`/secciones/medios-amigos`), que no lleva notas sino los **logos y enlaces de medios aliados**: se suman en
+  `MEDIOS_AMIGOS`, en `src/lib/marcas.ts` (nombre, tipo, logo en `public/brand/` y enlace). Radio del Sur usa el
+  «Enlace para escuchar la radio» de Ajustes; mientras no esté cargado se ve sin enlace. Viva Feria se retiró
+  (página, espacio y enlaces): las notas que lo tenían guardado se ven en el panel como «Espacio retirado» y, al
+  editarlas, quedan sin espacio.
+- **Videos**: la sección de videos (hoy "Sin censura"). Su dirección propia es `/sin-censura` (y `/sin-censura/<video>`
+  para cada uno); `/videos` sigue andando como alias, sin redirigir, y declara a `/sin-censura` como canónica. Solo
   admite videos, subidos o incrustados. El principal (o el más reciente) se ve grande en la portada con el botón
   "Ver todo". Las notas que quedaron de la versión anterior no se muestran.
-- **Publicidad**: laterales de las columnas y grilla de promociones. Los espacios libres muestran
-  "Tu marca acá" con un enlace a WhatsApp para consultar.
+- **Publicidad**: dos **banners horizontales** (970 por 250 px), uno arriba de «Lo último en nuestras redes» y otro
+  debajo del bloque «Comunidad», los laterales de las columnas y la grilla de promociones. Se cargan desde
+  Publicidad, eligiendo «Dónde se muestra»; cada banner y cada lateral muestran el primer anuncio activo. Los espacios libres muestran una invitación a anunciar con un
+  enlace a WhatsApp para consultar. Cada anuncio cuenta vistas y clics en Estadísticas.
 - **Redes**: importa solo lo que publicás en Instagram y Facebook (ver más abajo).
 - **Ajustes**: lema, aviso legal, los textos de la portada (frase institucional y la invitación «Tu historia
   también cuenta»), el **nombre de la sección de videos** (Sin censura o Sin filtro: se cambia en el menú, los
@@ -220,7 +231,7 @@ clics en los botones importantes (enviar noticia, redes, compartir, radio) y las
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
 
-5. **Deploy.** Entrá a `https://tu-sitio/admin`, borrá los ejemplos y completá *Ajustes* y *Redes*.
+5. **Deploy.** Entrá a `https://tu-sitio/semiton`, borrá los ejemplos y completá *Ajustes* y *Redes*.
 
 Cómo se revisa lo pendiente en Vercel, que no tiene un proceso encendido todo el tiempo:
 
@@ -233,11 +244,22 @@ Cómo se revisa lo pendiente en Vercel, que no tiene un proceso encendido todo e
 Antes de importar se "reclama el turno" en la base, así que varias instancias llegando a la vez no importan
 lo mismo dos veces.
 
+## Fondos del sitio
+
+Los fondos son un sistema (`src/components/site/Fondo.tsx`), todo plano y con los mismos motivos de la marca: un
+color de base (negro, grafito, papel o blanco), la trama de puntos del logo, un **disco rojo** cortado por la
+esquina, **aros** en línea del lado opuesto, un punto rojo y, en algunas franjas, la **lupa del logo** enorme como
+sello. La portada es una sucesión de *bandas* con ese fondo (`<Banda tono lado lupa medio>` en `(sitio)/page.tsx`)
+y el ritmo de tonos es: noche (cabecera) → papel → blanco → papel → noche (videos) → grafito (cierre) → noche (pie).
+Cada franja cambia de lado (izquierda/derecha) para que el motivo vaya y venga al bajar. Las secciones de adentro no
+llevan fondo propio: se apoyan en el de su banda. Las cabeceras de las páginas interiores y el pie usan el mismo fondo
+(`FondoNoche`, `Fondo`). Para una franja nueva, envolvela en una `Banda`; no pongas colores de fondo sueltos.
+
 ## Estructura
 
 ```
-src/app/(sitio)/        portada, noticias, nota, en vivo, videos, Viva Feria, Sí San Juan, privacidad, términos
-src/app/admin/          login y panel (acciones en actions.ts)
+src/app/(sitio)/        portada, noticias, nota, en vivo, sin censura, secciones, Sí San Juan, privacidad, términos
+src/app/semiton/        login y panel (acciones en actions.ts)
 src/app/api/live/       estado de la transmisión
 src/app/api/importar/   recibe avisos de Make o Zapier
 src/app/api/sync/       disparo de la importación (cron de Vercel o externo)

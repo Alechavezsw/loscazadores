@@ -5,7 +5,7 @@ import { ESPACIO_INFO, type Espacio } from "@/lib/types";
 import { NewsCard } from "./NewsCard";
 import { PageHeader } from "./PageHeader";
 
-/** Página de un espacio (Viva Feria, Servicios): todas sus noticias, de la más nueva a la más vieja. */
+/** Página de un espacio (hoy, Servicios): todas sus noticias, de la más nueva a la más vieja. */
 export async function EspacioPagina({ espacio }: { espacio: Espacio }) {
   const info = ESPACIO_INFO[espacio];
   const noticias = (await getNoticias()).filter((n) => n.espacio === espacio);

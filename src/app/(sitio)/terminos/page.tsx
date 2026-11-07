@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/site/LegalPage";
+import { metaPagina } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Términos de uso",
-  description: "Reglas de uso del sitio y alcance del contenido que publicamos.",
-};
+export const metadata: Metadata = metaPagina({
+  titulo: "Términos de uso",
+  descripcion: "Reglas de uso del sitio y alcance del contenido que publicamos.",
+  ruta: "/terminos",
+});
 
 export default function Terminos() {
   return (

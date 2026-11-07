@@ -10,7 +10,7 @@ import { esAdmin, panelConfigurado } from "@/lib/auth";
 export const metadata: Metadata = { title: "Entrar" };
 
 async function Contenido() {
-  if (await esAdmin()) redirect("/admin");
+  if (await esAdmin()) redirect("/semiton");
 
   return (
     <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-ink-1 p-8">

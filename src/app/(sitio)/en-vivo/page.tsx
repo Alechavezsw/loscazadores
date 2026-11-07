@@ -5,12 +5,14 @@ import { EnVivoPanel } from "@/components/site/EnVivoPanel";
 import { NewsCard } from "@/components/site/NewsCard";
 import { PageHeader } from "@/components/site/PageHeader";
 import { getAjustes, getNoticias } from "@/lib/queries";
+import { metaPagina } from "@/lib/seo";
 import { limpiarUrl, perfilYoutube } from "@/lib/urls";
 
-export const metadata: Metadata = {
-  title: "En vivo",
-  description: "Mirá las transmisiones en vivo de Los Cazadores de Noticias por YouTube.",
-};
+export const metadata: Metadata = metaPagina({
+  titulo: "En vivo",
+  descripcion: "Mirá las transmisiones en vivo de Los Cazadores de Noticias por YouTube.",
+  ruta: "/en-vivo",
+});
 
 export default async function EnVivo() {
   const [ajustes, noticias] = await Promise.all([getAjustes(), getNoticias()]);

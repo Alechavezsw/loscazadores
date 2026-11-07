@@ -17,7 +17,7 @@ export const AJUSTES_BASE: Ajustes = {
   youtube: "",
   youtubeModo: "auto",
   youtubeVideoManual: "",
-  whatsappContacto: "5492645105441",
+  whatsappContacto: "5492645075475",
   nombreVideos: "Sin censura",
   declaracion:
     "La noticia no es la que los medios nos imponen. La noticia es la que vivimos a diario en nuestro entorno y nos pone en alerta. Compartí la tuya.",
@@ -161,22 +161,6 @@ export function seed(): Db {
         "Comunidad",
         ["youtube"],
         40,
-      ),
-      crear(
-        "Se viene la sexta edición de Viva Feria",
-        "Viva Feria – Espacio de Emprendedores prepara su sexta edición. Acá van a aparecer la fecha, el lugar y todo lo que hay que saber para ir.\n\nNota de ejemplo: editala o borrala desde el panel.",
-        "Eventos",
-        [],
-        50,
-        { espacio: "viva-feria" },
-      ),
-      crear(
-        "Así pasó la sexta edición de Viva Feria en el Salón El Prado",
-        "Fotos, videos y lo que dejó la sexta edición de Viva Feria. Cada edición se cuenta en una nota nueva en este mismo espacio.\n\nNota de ejemplo: editala o borrala desde el panel.",
-        "Eventos",
-        [],
-        45,
-        { espacio: "viva-feria" },
       ),
       crear(
         "Novedades de servicios",

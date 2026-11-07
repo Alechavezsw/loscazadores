@@ -3,6 +3,7 @@ import { WhatsappLogo } from "@phosphor-icons/react/ssr";
 import { limpiarUrl, perfilInstagram, perfilYoutube, telefonoLegible } from "@/lib/urls";
 import { ESPACIO_INFO, ESPACIOS, rutaSeccion, SECCIONES, type Ajustes } from "@/lib/types";
 import { CANAL_UI } from "./canales";
+import { Fondo } from "./Fondo";
 import { Logo } from "./Brand";
 
 export function Footer({ ajustes, contactoHref }: { ajustes: Ajustes; contactoHref: string }) {
@@ -17,7 +18,8 @@ export function Footer({ ajustes, contactoHref }: { ajustes: Ajustes; contactoHr
     "text-sm font-semibold text-white/70 transition-colors duration-700 ease-fluid hover:text-white";
 
   return (
-    <footer className="bg-ink text-white">
+    <footer className="relative isolate overflow-hidden bg-ink text-white">
+      <Fondo tono="noche" lado="izq" />
       <div className="mx-auto grid max-w-[1440px] gap-12 px-4 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-6">
         <div className="flex flex-col items-start gap-6">
           <Link href="/" aria-label="Los Cazadores de Noticias, ir al inicio">
@@ -55,7 +57,7 @@ export function Footer({ ajustes, contactoHref }: { ajustes: Ajustes; contactoHr
             <li><Link href="/" className={enlace}>Inicio</Link></li>
             <li><Link href="/noticias" className={enlace}>Noticias</Link></li>
             <li><Link href="/en-vivo" className={enlace}>En vivo</Link></li>
-            <li><Link href="/videos" className={enlace}>{ajustes.nombreVideos}</Link></li>
+            <li><Link href="/sin-censura" className={enlace}>{ajustes.nombreVideos}</Link></li>
             {ESPACIOS.map((e) => (
               <li key={e}>
                 <Link href={ESPACIO_INFO[e].ruta} className={enlace}>{ESPACIO_INFO[e].nombre}</Link>
@@ -106,7 +108,20 @@ export function Footer({ ajustes, contactoHref }: { ajustes: Ajustes; contactoHr
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-8 md:flex-row md:items-start md:justify-between md:px-6">
-          <p className="max-w-3xl text-xs leading-relaxed text-white/50">{ajustes.aviso}</p>
+          <div className="flex max-w-3xl flex-col gap-3">
+            <p className="text-xs leading-relaxed text-white/50">{ajustes.aviso}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+              Desarrollado por:{" "}
+              <a
+                href="https://www.cosechacreativa.com.ar"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-white/30 underline-offset-2 transition-colors duration-700 ease-fluid hover:text-white hover:decoration-white"
+              >
+                www.cosechacreativa.com.ar
+              </a>
+            </p>
+          </div>
           <ul className="flex shrink-0 items-center gap-6">
             <li><Link href="/privacidad" className="text-xs font-semibold text-white/70 hover:text-white">Privacidad</Link></li>
             <li><Link href="/terminos" className="text-xs font-semibold text-white/70 hover:text-white">Términos</Link></li>

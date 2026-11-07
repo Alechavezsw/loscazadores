@@ -3,7 +3,7 @@
 import { useHidratado } from "@/lib/use-hidratado";
 import Link from "next/link";
 import { startTransition, useActionState, useState } from "react";
-import { guardarPieza, type FormState } from "@/app/admin/actions";
+import { guardarPieza, type FormState } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import type { PiezaSC } from "@/lib/types";
 import type { ModoVideo } from "@/lib/video-limites";
@@ -107,7 +107,7 @@ export function VideoForm({ pieza, modoVideo }: { pieza?: PiezaSC; modoVideo: Mo
           <button type="submit" disabled={pendiente || !hidratado || subiendoVideo} className={botonPrimario}>
             {subiendoVideo ? "Esperá, se está subiendo el video…" : pendiente ? "Guardando…" : pieza ? "Guardar cambios" : "Publicar video"}
           </button>
-          <Link href="/admin/videos" className={botonSecundario}>
+          <Link href="/semiton/videos" className={botonSecundario}>
             Cancelar
           </Link>
         </div>

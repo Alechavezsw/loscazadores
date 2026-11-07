@@ -43,7 +43,7 @@ const archivo = (fd: FormData, campo: string) => {
 /** Renueva lo que ve el público y lo que muestra el propio panel. */
 function refrescar() {
   updateTag("contenido");
-  revalidatePath("/admin", "layout");
+  revalidatePath("/semiton", "layout");
 }
 
 /**
@@ -68,7 +68,7 @@ function leerMedios(fd: FormData, errores: Record<string, string>) {
 
 export async function iniciarSesion(_prev: FormState, fd: FormData): Promise<FormState> {
   const resultado = await intentarLogin(String(fd.get("password") ?? ""));
-  if (resultado === "ok") redirect("/admin");
+  if (resultado === "ok") redirect("/semiton");
   const mensajes = {
     mal: "La contraseña no es correcta.",
     bloqueado: "Hubo demasiados intentos fallidos. Esperá 10 minutos y probá de nuevo.",
@@ -79,7 +79,7 @@ export async function iniciarSesion(_prev: FormState, fd: FormData): Promise<For
 
 export async function salir() {
   await cerrarSesion();
-  redirect("/admin/login");
+  redirect("/semiton/login");
 }
 
 // ───────────────────────── noticias ─────────────────────────
@@ -182,7 +182,7 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
   if (videoAnterior && videoAnterior !== video) await borrarVideo(videoAnterior);
 
   refrescar();
-  redirect(`/admin/noticias?msg=${resultado === "creada" ? "creada" : "guardada"}`);
+  redirect(`/semiton/noticias?msg=${resultado === "creada" ? "creada" : "guardada"}`);
 }
 
 export async function eliminarNoticia(id: string) {
@@ -195,7 +195,7 @@ export async function eliminarNoticia(id: string) {
   await borrarImagen(quitada?.imagen);
   await borrarVideo(quitada?.video);
   refrescar();
-  redirect("/admin/noticias?msg=eliminada");
+  redirect("/semiton/noticias?msg=eliminada");
 }
 
 /**
@@ -232,7 +232,7 @@ export async function borrarEjemplos() {
   });
   await Promise.all(fuera.flatMap((x) => [borrarImagen(x.imagen), borrarVideo(x.video)]));
   refrescar();
-  redirect("/admin/noticias?msg=ejemplos");
+  redirect("/semiton/noticias?msg=ejemplos");
 }
 
 // ───────────────────────── videos ─────────────────────────
@@ -317,7 +317,7 @@ export async function guardarPieza(_prev: FormState, fd: FormData): Promise<Form
   if (videoAnterior && videoAnterior !== video) await borrarVideo(videoAnterior);
 
   refrescar();
-  redirect(`/admin/videos?msg=${resultado === "creada" ? "creada" : "guardada"}`);
+  redirect(`/semiton/videos?msg=${resultado === "creada" ? "creada" : "guardada"}`);
 }
 
 export async function eliminarPieza(id: string) {
@@ -330,7 +330,7 @@ export async function eliminarPieza(id: string) {
   await borrarImagen(quitada?.imagen);
   await borrarVideo(quitada?.video);
   refrescar();
-  redirect("/admin/videos?msg=eliminada");
+  redirect("/semiton/videos?msg=eliminada");
 }
 
 export async function alternarPieza(id: string) {
@@ -420,7 +420,7 @@ export async function guardarAnuncio(_prev: FormState, fd: FormData): Promise<Fo
   if (nombre && imagenAnterior) await borrarImagen(imagenAnterior);
 
   refrescar();
-  redirect("/admin/publicidad?msg=guardado");
+  redirect("/semiton/publicidad?msg=guardado");
 }
 
 export async function alternarAnuncio(id: string) {
@@ -506,7 +506,7 @@ export async function guardarAjustes(_prev: FormState, fd: FormData): Promise<Fo
     errores.youtubeVideoManual = "Pegá el enlace o el ID del video que está en vivo.";
   }
   if (a.whatsappContacto && (a.whatsappContacto.length < 10 || a.whatsappContacto.length > 15)) {
-    errores.whatsappContacto = "Escribí el número con código de país, por ejemplo 5492645105441.";
+    errores.whatsappContacto = "Escribí el número con código de país, por ejemplo 5492645075475.";
   }
   if (a.nombreVideos.length < 3 || a.nombreVideos.length > 30) errores.nombreVideos = "Escribí el nombre de la sección, de 3 a 30 letras.";
   if (a.declaracion.length < 20 || a.declaracion.length > 600) errores.declaracion = "Escribí la frase, de 20 a 600 caracteres.";
