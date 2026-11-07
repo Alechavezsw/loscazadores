@@ -40,7 +40,7 @@ Para producción: `npm run build` y `npm start`. Copiá `.env.example` a `.env.l
 
 Al cargar o editar una noticia hay dos campos nuevos:
 
-- **Video**: se sube un MP4 (H.264) o un WebM de hasta 200 MB. Se ve en la nota en el lugar de la foto, con la
+- **Video**: se sube un MP4 (H.264) o un WebM de hasta 100 MB (200 MB con Blob o en disco). Se ve en la nota en el lugar de la foto, con la
   foto de portada como carátula. Los `.mov` de iPhone a veces no se ven en todos los navegadores: conviene MP4.
   No se convierten ni se recortan. En la portada y en los listados, la nota lleva una insignia "Video".
 - **Incrustar**: se pega un enlace por línea, o el código de insertar (iframe), de YouTube, Vimeo, TikTok,
@@ -49,17 +49,22 @@ Al cargar o editar una noticia hay dos campos nuevos:
   esos cinco servicios (YouTube va por `youtube-nocookie.com`). Los enlaces cortos de TikTok (`vm.tiktok.com`) no se
   pueden resolver: hay que pegar el enlace largo. Para un video largo conviene subirlo a YouTube e incrustarlo.
 
-Dónde se guardan los videos:
+Dónde se guardan los videos (se elige solo, en este orden):
 
-- **En Vercel** (con `BLOB_READ_WRITE_TOKEN`): el navegador los sube **directo a Vercel Blob**, sin pasar por el
-  servidor, porque una función de Vercel no recibe pedidos de más de 4,5 MB. El permiso de subida solo se da a
-  quien está en el panel, solo para videos hasta 200 MB y dentro de la carpeta `videos/`. Los videos consumen
-  almacenamiento y transferencia de Blob: conviene mirar los límites del plan.
-- **En tu computadora**: van a `data/uploads/videos` y se sirven desde `/media/video/…` con soporte para
-  adelantar y retroceder. Se verifica el tipo declarado y los primeros bytes del archivo.
+- **En la base Postgres** (con `DATABASE_URL`, que es lo normal en Vercel): el panel los sube **de a trozos de 3 MB**
+  (`/api/videos/db`), porque una función de Vercel no recibe pedidos de más de 4,5 MB. Cada video es una fila de
+  `lc_videos` y sus trozos son filas de `lc_video_trozos` (se crean solas). No se ve hasta que se comprueba que
+  llegaron todos los trozos y suman lo declarado. Se sirve desde `/media/video/…` con soporte para adelantar y
+  retroceder, leyendo de a un trozo. Tope: **100 MB** por video, porque cada MB cuenta contra el espacio de la
+  base: para videos largos conviene YouTube e Incrustar. Las subidas que quedan a medias se limpian solas a las 2 horas.
+- **En Vercel Blob** (sin base pero con `BLOB_READ_WRITE_TOKEN`): el navegador los sube **directo a Vercel Blob**,
+  hasta 200 MB y dentro de la carpeta `videos/`. Consumen almacenamiento y transferencia de Blob.
+- **En tu computadora** (sin base ni Blob): van a `data/uploads/videos` y se sirven desde `/media/video/…` con
+  soporte para adelantar y retroceder. Se verifica el tipo declarado y los primeros bytes del archivo.
 
 Si en el formulario se reemplaza o se quita un video recién subido que todavía no se guardó, se borra solo. Si se
-cierra la página sin guardar, ese video queda sin usar y hay que borrarlo a mano desde Blob o del disco.
+cierra la página sin guardar, ese video queda sin usar: con la base se limpia solo a las 2 horas; con Blob o en
+disco hay que borrarlo a mano.
 
 ## YouTube en vivo
 
@@ -160,9 +165,10 @@ El sitio elige solo según el entorno:
 - **En tu computadora** (sin `DATABASE_URL`): un archivo `data/db.json` y las fotos en `data/uploads/`
   (carpeta ignorada por git, se puede mover con `DATA_DIR`). Las fotos se sirven desde `/media/…`.
 - **En Vercel** (con `DATABASE_URL`): las noticias, anuncios, ajustes, la conexión con Meta y las fotos van
-  a una base **Postgres** (Neon). Cada foto es una fila de `lc_imagenes` y se sirve desde `/media/…`. Las
-  tablas se crean solas la primera vez. Cada cambio corre en una transacción con un candado, así que el
-  panel, un aviso de Make y el cron pueden trabajar a la vez sin pisarse. **Blob** queda para los videos.
+  a una base **Postgres** (Neon o Supabase). Cada foto es una fila de `lc_imagenes` y se sirve desde `/media/…`;
+  los videos van a `lc_videos` y `lc_video_trozos` (ver arriba). Las tablas se crean solas la primera vez. Cada
+  cambio corre en una transacción con un candado, así que el panel, un aviso de Make y el cron pueden trabajar a
+  la vez sin pisarse. **Blob** queda solo como respaldo si no hay base.
 
 En los dos casos las fotos se reducen a 1600 px y se pasan a WebP. Desde el panel, además, el navegador las
 achica antes de enviarlas (Vercel corta los pedidos de más de 4,5 MB, y una foto de celular pesa más).
@@ -196,8 +202,8 @@ clics en los botones importantes (enviar noticia, redes, compartir, radio) y las
    más cosas, en Vercel poné *Root Directory* en `web`.
 2. **Proyecto.** En Vercel, *Add New, Project*, elegí el repositorio. Detecta Next.js solo.
 3. **Almacenamiento.** En el proyecto, pestaña *Storage*: creá una base **Neon** (Postgres, desde el
-   Marketplace) y conectala al proyecto en todos los entornos. Eso define `DATABASE_URL`. Las fotos quedan
-   en esa base. Un **Blob** (`BLOB_READ_WRITE_TOKEN`) hace falta solo para subir videos.
+   Marketplace) y conectala al proyecto en todos los entornos. Eso define `DATABASE_URL`. Las fotos y los videos
+   quedan en esa base: no hace falta Blob.
 4. **Variables** (*Settings, Environment Variables*):
 
    | Variable | Para qué |

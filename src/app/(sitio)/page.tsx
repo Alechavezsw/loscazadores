@@ -12,13 +12,17 @@ import { Ticker } from "@/components/site/Ticker";
 import { VideosInicio } from "@/components/site/VideosInicio";
 import { getAjustes, getAnuncios, getNoticias, getVideos } from "@/lib/queries";
 import { linkWhatsapp, perfilYoutube } from "@/lib/urls";
+import { getUltimoVideo } from "@/lib/youtube-canal";
 
 export default async function Inicio() {
-  const [ajustes, noticias, anuncios, videos] = await Promise.all([
-    getAjustes(),
+  const ajustesPendiente = getAjustes();
+  const [ajustes, noticias, anuncios, videos, ultimoVideo] = await Promise.all([
+    ajustesPendiente,
     getNoticias(),
     getAnuncios(),
     getVideos(),
+    // El último video sale del mismo canal que el enlace de la columna de YouTube.
+    ajustesPendiente.then((a) => getUltimoVideo(a.youtube || a.tomateve)),
   ]);
   const consultaHref = linkWhatsapp(ajustes.whatsappContacto, "Hola, quiero publicitar en Los Cazadores de Noticias.");
   const noticiaHref = linkWhatsapp(ajustes.whatsappContacto, "Hola, quiero mandarles una noticia.");
@@ -36,7 +40,7 @@ export default async function Inicio() {
         <p>{ajustes.aviso}</p>
       </div>
 
-      <ChannelRail noticias={noticias} anuncios={anuncios} ajustes={ajustes} />
+      <ChannelRail noticias={noticias} anuncios={anuncios} ajustes={ajustes} ultimoVideo={ultimoVideo} />
       <LatestNews noticias={generales} />
       <EspaciosInicio noticias={noticias} />
       <ProgramasInicio ajustes={ajustes} />

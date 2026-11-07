@@ -14,7 +14,7 @@ import { ACCIONES, esAccion } from "@/lib/stats-acciones";
 import { promedio, variacion } from "@/lib/stats-calculo";
 import { leerActivos, leerPanel } from "@/lib/stats";
 import { readDb } from "@/lib/store";
-import { SLOT_NOMBRE } from "@/lib/types";
+import { rutaSeccion, SECCIONES, SLOT_NOMBRE } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Estadísticas" };
@@ -29,6 +29,7 @@ const FIJAS: Record<string, string> = {
   "/videos": "Videos (la sección)",
   "/viva-feria": "Viva Feria",
   "/si-san-juan": "Servicios",
+  ...Object.fromEntries(SECCIONES.map((s) => [rutaSeccion(s), `Sección: ${s.nombre}`])),
   "/sin-censura": "Videos (dirección anterior)",
   "/privacidad": "Privacidad",
   "/terminos": "Términos",

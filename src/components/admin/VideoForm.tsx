@@ -6,6 +6,7 @@ import { startTransition, useActionState, useState } from "react";
 import { guardarPieza, type FormState } from "@/app/admin/actions";
 import { cn } from "@/lib/cn";
 import type { PiezaSC } from "@/lib/types";
+import type { ModoVideo } from "@/lib/video-limites";
 import { ImagenCampo } from "./ImagenCampo";
 import { IncrustarCampo } from "./IncrustarCampo";
 import { VideoCampo } from "./VideoCampo";
@@ -14,7 +15,7 @@ import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "
 const INICIAL: FormState = { ok: false };
 
 /** Alta y edición de un video de la sección de videos. */
-export function VideoForm({ pieza, modoVideo }: { pieza?: PiezaSC; modoVideo: "blob" | "local" }) {
+export function VideoForm({ pieza, modoVideo }: { pieza?: PiezaSC; modoVideo: ModoVideo }) {
   const [estado, accion, pendiente] = useActionState(guardarPieza, INICIAL);
   const errores = estado.errores ?? {};
   const hidratado = useHidratado();

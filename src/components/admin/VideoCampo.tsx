@@ -5,12 +5,65 @@ import { VideoCamera, WarningCircle } from "@phosphor-icons/react/ssr";
 import { descartarVideoSubido } from "@/app/admin/actions";
 import { cn } from "@/lib/cn";
 import { srcVideo } from "@/lib/imagen-url";
+import { MAX_VIDEO_BD_BYTES, MAX_VIDEO_BYTES, TIPOS_VIDEO, TROZO_VIDEO_BYTES, type ModoVideo } from "@/lib/video-limites";
 import { botonSecundario } from "./ui";
 
-const MAX_MB = 200;
-const TIPOS = ["video/mp4", "video/webm", "video/quicktime"];
+const TIPOS: readonly string[] = TIPOS_VIDEO;
+const MB = 1024 * 1024;
 
-type Modo = "blob" | "local";
+type Modo = ModoVideo;
+
+/** Manda un trozo. Si se corta la red lo reintenta un par de veces; un error del pedido no se arregla reintentando. */
+async function enviarTrozo(url: string, pedazo: Blob, senal: AbortSignal) {
+  let motivo = "Se cortó la conexión. Probá de nuevo.";
+  for (let intento = 0; intento < 3; intento++) {
+    let r: Response;
+    try {
+      r = await fetch(url, { method: "PUT", body: pedazo, signal: senal });
+    } catch (err) {
+      if (senal.aborted) throw err; // la persona canceló
+      continue; // falló la red: se reintenta
+    }
+    if (r.ok) return;
+    const e = (await r.json().catch(() => ({}))) as { error?: string };
+    motivo = e.error ?? "No se pudo subir el video.";
+    if (r.status < 500) break;
+  }
+  throw new Error(motivo);
+}
+
+/**
+ * Sube a la base de datos de a trozos: cada pedido lleva un pedazo del archivo, porque una función de Vercel no
+ * recibe pedidos de más de 4,5 MB. Al final el servidor comprueba que estén todos.
+ */
+async function subirABd(archivo: File, onProgreso: (n: number) => void, senal: AbortSignal) {
+  const json = { "Content-Type": "application/json" };
+  const inicio = await fetch("/api/videos/db", {
+    method: "POST",
+    headers: json,
+    body: JSON.stringify({ accion: "iniciar", tipo: archivo.type, bytes: archivo.size }),
+    signal: senal,
+  });
+  const abierta = (await inicio.json().catch(() => ({}))) as { nombre?: string; trozo?: number; error?: string };
+  if (!inicio.ok || !abierta.nombre) throw new Error(abierta.error ?? "No se pudo preparar la subida.");
+
+  const trozo = abierta.trozo ?? TROZO_VIDEO_BYTES;
+  const total = Math.ceil(archivo.size / trozo);
+  for (let n = 0; n < total; n++) {
+    await enviarTrozo(`/api/videos/db?nombre=${encodeURIComponent(abierta.nombre)}&n=${n}`, archivo.slice(n * trozo, (n + 1) * trozo), senal);
+    onProgreso(((n + 1) / total) * 100);
+  }
+
+  const fin = await fetch("/api/videos/db", {
+    method: "POST",
+    headers: json,
+    body: JSON.stringify({ accion: "terminar", nombre: abierta.nombre }),
+    signal: senal,
+  });
+  const cerrada = (await fin.json().catch(() => ({}))) as { valor?: string; error?: string };
+  if (!fin.ok || !cerrada.valor) throw new Error(cerrada.error ?? "No se pudo terminar la subida.");
+  return cerrada.valor;
+}
 
 /** Sube directo a Vercel Blob: el permiso lo da /api/videos/blob y el archivo no pasa por nuestro servidor. */
 async function subirABlob(archivo: File, onProgreso: (n: number) => void, senal: AbortSignal) {
@@ -62,6 +115,7 @@ type Props = {
 };
 
 export function VideoCampo({ actual, modo, error, alCambiarOcupado }: Props) {
+  const maxMb = Math.round((modo === "bd" ? MAX_VIDEO_BD_BYTES : MAX_VIDEO_BYTES) / MB);
   const [valor, setValor] = useState<string | null>(actual ?? null);
   const [subiendo, setSubiendo] = useState(false);
   const [progreso, setProgreso] = useState(0);
@@ -85,8 +139,8 @@ export function VideoCampo({ actual, modo, error, alCambiarOcupado }: Props) {
       setLocal("Formato no admitido. Subí un MP4 o un WebM.");
       return;
     }
-    if (archivo.size > MAX_MB * 1024 * 1024) {
-      setLocal(`El video pesa más de ${MAX_MB} MB. Para videos largos conviene subirlos a YouTube y pegar el enlace en Incrustar.`);
+    if (archivo.size > maxMb * MB) {
+      setLocal(`El video pesa más de ${maxMb} MB. Para videos largos conviene subirlos a YouTube y pegar el enlace en Incrustar.`);
       return;
     }
 
@@ -97,7 +151,8 @@ export function VideoCampo({ actual, modo, error, alCambiarOcupado }: Props) {
     const ctl = new AbortController();
     control.current = ctl;
     try {
-      const nuevo = await (modo === "blob" ? subirABlob : subirLocal)(archivo, setProgreso, ctl.signal);
+      const subir = modo === "bd" ? subirABd : modo === "blob" ? subirABlob : subirLocal;
+      const nuevo = await subir(archivo, setProgreso, ctl.signal);
       descartarSiEraNuevo(valor);
       subidosAcaSolo.current.add(nuevo);
       setValor(nuevo);
@@ -176,7 +231,7 @@ export function VideoCampo({ actual, modo, error, alCambiarOcupado }: Props) {
         >
           <VideoCamera className="size-8 text-ink/40" aria-hidden />
           <span className="text-sm font-semibold">Elegí un video</span>
-          <span className="text-xs text-ink/60">MP4 (H.264) o WebM, hasta {MAX_MB} MB</span>
+          <span className="text-xs text-ink/60">MP4 (H.264) o WebM, hasta {maxMb} MB</span>
         </label>
       )}
 

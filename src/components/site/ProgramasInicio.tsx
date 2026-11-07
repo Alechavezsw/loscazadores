@@ -6,7 +6,7 @@ import { SectionTitle } from "./Brand";
 import { BailongoCard } from "./BailongoCard";
 import { TomateveCard } from "./TomateveCard";
 
-/** Los dos cuadros de la sección: Toma TV (en vivo por YouTube, con sus programas) y Radio del Sur (Se Armó el Bailongo). */
+/** Los dos cuadros de la sección: TomateTV (en vivo por YouTube, con sus programas) y Radio del Sur (Se Armó el Bailongo). */
 export function ProgramasInicio({ ajustes }: { ajustes: Pick<Ajustes, "tomateve" | "radioEnlace"> }) {
   return (
     <section aria-labelledby="programas-titulo" className="mx-auto w-full max-w-[1440px] px-4 pb-16 md:px-6 md:pb-24">

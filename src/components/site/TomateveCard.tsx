@@ -2,11 +2,57 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { ArrowUpRight, YoutubeLogo } from "@phosphor-icons/react/ssr";
-import { MARCAS, PROGRAMAS_TOMATE } from "@/lib/marcas";
-import { proximaTomateve, TOMATEVE } from "@/lib/programas";
+import { MARCAS, PROGRAMAS_TOMATE, type Marca } from "@/lib/marcas";
+import {
+  esProximamente,
+  horarioDe,
+  PRIMERA_EMISION,
+  PROGRAMACION_FRASE,
+  programaProximo,
+  proximaTomateve,
+  TOMATEVE,
+} from "@/lib/programas";
 import type { LiveStatus } from "@/lib/types";
 import { FichaMarca, ImagenMarca } from "./FichaMarca";
 import { EnVivoInsignia, Reproductor } from "./LiveSection";
+
+/** Cuándo se emite, quién conduce y por dónde sale un programa, para mostrar bajo su logo. */
+function DetallePrograma({ marca }: { marca: Marca }) {
+  const horario = horarioDe(marca.nombre);
+  const d = marca.detalle;
+  if (!horario && !d) return null;
+
+  const rotulo = "text-xs font-bold uppercase tracking-widest text-white/50";
+  return (
+    <dl className="flex flex-col gap-2 text-sm leading-snug">
+      {horario ? (
+        <div>
+          <dt className="sr-only">Horario</dt>
+          <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 font-semibold text-white">
+            {horario}
+            {esProximamente(marca.nombre) ? (
+              <span className="rounded-full bg-hunter px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest">Próximamente</span>
+            ) : null}
+          </dd>
+        </div>
+      ) : null}
+      {d ? (
+        <>
+          {d.conduce && d.conduccion ? (
+            <div>
+              <dt className={rotulo}>{d.conduce}</dt>
+              <dd className="text-white/80">{d.conduccion}</dd>
+            </div>
+          ) : null}
+          <div>
+            <dt className={rotulo}>Emitido por</dt>
+            <dd className="text-white/80">{d.emision}</dd>
+          </div>
+        </>
+      ) : null}
+    </dl>
+  );
+}
 
 /** El texto de «próxima transmisión» se recalcula cada minuto. En el servidor se muestra el horario fijo. */
 function suscribirMinuto(avisar: () => void) {
@@ -21,7 +67,9 @@ function suscribirMinuto(avisar: () => void) {
  */
 export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; canalUrl: string }) {
   const [estado, setEstado] = useState<LiveStatus | null>(null);
-  const proxima = useSyncExternalStore(suscribirMinuto, () => proximaTomateve(new Date()), () => TOMATEVE.horario);
+  // Dos lecturas de texto (y no un objeto), porque useSyncExternalStore necesita un valor estable entre lecturas.
+  const proxima = useSyncExternalStore(suscribirMinuto, () => proximaTomateve(new Date()), () => PRIMERA_EMISION.cuando);
+  const programaSiguiente = useSyncExternalStore(suscribirMinuto, () => programaProximo(new Date()), () => PRIMERA_EMISION.programa);
 
   // Pregunta cada minuto si el canal está transmitiendo (cada tres si la pestaña no se ve).
   useEffect(() => {
@@ -61,13 +109,13 @@ export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; 
   const en = estado?.live && estado.videoId ? estado : null;
 
   return (
-    <article aria-label={`${TOMATEVE.nombre}, ${TOMATEVE.programa}`} className="flex h-full flex-col overflow-hidden rounded-2xl bg-ink text-white">
+    <article aria-label={TOMATEVE.nombre} className="flex h-full flex-col overflow-hidden rounded-2xl bg-ink text-white">
       <header className="trama flex items-center justify-between gap-3 px-5 py-5 md:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <ImagenMarca
             marca={MARCAS.tomateve}
             decorativa
-            className="h-12 w-auto max-w-32 shrink-0 rounded-lg bg-white object-contain p-1.5"
+            className="size-12 shrink-0 rounded-full object-cover"
           />
           <div className="leading-tight">
             <p className="text-xl font-extrabold tracking-tight sm:text-2xl md:text-3xl">{TOMATEVE.nombre}</p>
@@ -85,11 +133,11 @@ export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; 
 
       <div className="relative aspect-video bg-ink-1">
         {en ? (
-          <Reproductor videoId={en.videoId!} titulo={en.titulo ?? `${TOMATEVE.programa} en vivo`} />
+          <Reproductor videoId={en.videoId!} titulo={en.titulo ?? `${TOMATEVE.nombre} en vivo`} />
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-ink-2 to-ink px-6 text-center">
             <YoutubeLogo weight="fill" className="size-10 text-hunter" aria-hidden />
-            <p className="text-xl font-bold md:text-2xl">{TOMATEVE.programa}</p>
+            <p className="text-xl font-bold md:text-2xl">{programaSiguiente}</p>
             <p className="text-sm text-white/70">
               {configurado ? `Próxima transmisión: ${proxima}` : "Pronto vas a poder verlo desde acá."}
             </p>
@@ -101,7 +149,7 @@ export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; 
         <p className="text-sm leading-relaxed text-white/70">
           {en
             ? "Estás viendo el programa en vivo. Empieza sin sonido: tocá el parlante del reproductor para activarlo."
-            : `${TOMATEVE.programa} sale al aire ${TOMATEVE.horario.toLowerCase()}. Cuando empiece, lo vas a ver acá mismo.`}
+            : `${TOMATEVE.nombre} transmite ${PROGRAMACION_FRASE}. Cuando empiece, lo vas a ver acá mismo.`}
         </p>
         <div>
           <p id="programas-tomate" className="mb-2 text-xs font-bold uppercase tracking-widest text-white/50">
@@ -109,7 +157,7 @@ export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; 
           </p>
           <ul aria-labelledby="programas-tomate" className="grid gap-3 sm:grid-cols-3">
             {PROGRAMAS_TOMATE.map((p) => (
-              <FichaMarca key={p.nombre} marca={p} />
+              <FichaMarca key={p.nombre} marca={p} detalle={<DetallePrograma marca={p} />} />
             ))}
           </ul>
         </div>

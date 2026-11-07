@@ -15,13 +15,17 @@ import { TimeAgo } from "@/components/TimeAgo";
 import { Avatar, BrandCover, Photo } from "./Brand";
 import { CANAL_UI } from "./canales";
 import { InsigniaVideo } from "./NewsCard";
+import { UltimoVideo } from "./UltimoVideo";
 import { YoutubeMedia } from "./YoutubeMedia";
+import type { VideoCanal } from "@/lib/youtube-canal";
 
 type Props = {
   canal: Canal;
   noticia: Noticia | null;
   perfilUrl: string;
   handleIg: string;
+  /** Solo para la columna de YouTube: el último video del canal. Si está, reemplaza a la nota de esa columna. */
+  video?: VideoCanal | null;
 };
 
 function Media({ n, className }: { n: Noticia; className: string }) {
@@ -82,12 +86,12 @@ function Cabecera({ n, canal, handleIg }: { n: Noticia; canal: Canal; handleIg: 
   );
 }
 
-/** El ícono de la red a la izquierda de la barra roja, o el logo propio de la columna sobre un casillero blanco. */
+/** El ícono de la red a la izquierda de la barra roja, o el logo propio de la columna como avatar redondo. */
 function Insignia({ ui }: { ui: (typeof CANAL_UI)[Canal] }) {
   if (ui.logo) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={ui.logo} alt="" loading="lazy" decoding="async" className="h-10 w-auto max-w-24 shrink-0 rounded-lg bg-white object-contain p-1" />
+      <img src={ui.logo} alt="" loading="lazy" decoding="async" className="size-10 shrink-0 rounded-full object-cover" />
     );
   }
   return (
@@ -97,9 +101,11 @@ function Insignia({ ui }: { ui: (typeof CANAL_UI)[Canal] }) {
   );
 }
 
-export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg }: Props) {
+export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg, video }: Props) {
   const ui = CANAL_UI[canal];
-  const destino = (n?.enlaces[canal] || perfilUrl || "").trim();
+  const conVideo = canal === "youtube" ? (video ?? null) : null;
+  // Con el último video a la vista, el botón lleva al canal y no al enlace de una nota.
+  const destino = (conVideo ? perfilUrl : n?.enlaces[canal] || perfilUrl || "").trim();
   const resto = n ? cuerpoSinTitulo(n.titulo, n.cuerpo) : "";
   const hashtags = n
     ? `#SanJuan #${n.categoria.normalize("NFD").replace(/[̀-ͯ\s]/g, "")} #LosCazadores`
@@ -127,7 +133,9 @@ export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg }: Props) {
       )}
 
       <div className="flex flex-1 flex-col gap-3 p-3">
-        {n ? (
+        {conVideo ? (
+          <UltimoVideo video={conVideo} />
+        ) : n ? (
           <>
             {canal !== "youtube" ? <Cabecera n={n} canal={canal} handleIg={handleIg} /> : null}
 

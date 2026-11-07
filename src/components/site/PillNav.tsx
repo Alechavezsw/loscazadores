@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { WhatsappLogo } from "@phosphor-icons/react/ssr";
+import { CaretDown, WhatsappLogo } from "@phosphor-icons/react/ssr";
 import { cn } from "@/lib/cn";
+import { rutaSeccion, SECCIONES } from "@/lib/types";
 import { useLive } from "@/components/LiveProvider";
 import { Mark } from "./Brand";
 
@@ -43,6 +44,9 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
   const enVivo = Boolean(estado?.live);
   const [abierto, setAbierto] = useState(false);
   const [alto, setAlto] = useState(false);
+  // El desplegable de secciones de la barra de escritorio.
+  const [seccionesAbiertas, setSeccionesAbiertas] = useState(false);
+  const itemSecciones = useRef<HTMLLIElement>(null);
   const centinela = useRef<HTMLDivElement>(null);
 
   // La píldora se oscurece un poco cuando ya no estamos arriba de todo. Sin listener de scroll.
@@ -66,7 +70,23 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
     };
   }, [abierto]);
 
+  // El desplegable de secciones se cierra al tocar afuera o con Escape.
+  useEffect(() => {
+    if (!seccionesAbiertas) return;
+    const alTocar = (e: PointerEvent) => {
+      if (!itemSecciones.current?.contains(e.target as Node)) setSeccionesAbiertas(false);
+    };
+    const alTeclear = (e: KeyboardEvent) => e.key === "Escape" && setSeccionesAbiertas(false);
+    document.addEventListener("pointerdown", alTocar);
+    window.addEventListener("keydown", alTeclear);
+    return () => {
+      document.removeEventListener("pointerdown", alTocar);
+      window.removeEventListener("keydown", alTeclear);
+    };
+  }, [seccionesAbiertas]);
+
   const activo = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const enSecciones = pathname.startsWith("/secciones/");
 
   return (
     <>
@@ -108,6 +128,55 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
                 </li>
               );
             })}
+
+            <li ref={itemSecciones} className="relative">
+              <button
+                type="button"
+                onClick={() => setSeccionesAbiertas((v) => !v)}
+                aria-expanded={seccionesAbiertas}
+                aria-controls="menu-secciones"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-all duration-700 ease-fluid active:scale-[0.98]",
+                  enSecciones ? "bg-white text-ink" : "text-white/80 hover:bg-white/10 hover:text-white",
+                )}
+              >
+                Secciones
+                <CaretDown
+                  weight="bold"
+                  className={cn("size-3.5 transition-transform duration-700 ease-fluid", seccionesAbiertas && "rotate-180")}
+                  aria-hidden
+                />
+              </button>
+              <div
+                id="menu-secciones"
+                inert={!seccionesAbiertas}
+                className={cn(
+                  "absolute left-0 top-full mt-4 w-60 rounded-2xl border border-white/15 bg-black/90 p-2 transition-all duration-500 ease-fluid",
+                  seccionesAbiertas ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0",
+                )}
+              >
+                <ul className="flex flex-col">
+                  {SECCIONES.map((s) => {
+                    const on = pathname === rutaSeccion(s);
+                    return (
+                      <li key={s.slug}>
+                        <Link
+                          href={rutaSeccion(s)}
+                          onClick={() => setSeccionesAbiertas(false)}
+                          aria-current={on ? "page" : undefined}
+                          className={cn(
+                            "block rounded-xl px-3 py-2 text-sm font-semibold transition-colors duration-700 ease-fluid",
+                            on ? "bg-white text-ink" : "text-white/80 hover:bg-white/10 hover:text-white",
+                          )}
+                        >
+                          {s.nombre}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </li>
           </ul>
 
           {contactoHref ? (
@@ -183,6 +252,35 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
               </li>
             );
           })}
+          <li className="overflow-hidden pt-4">
+            <div
+              className={cn(
+                "transition-all duration-700 ease-fluid",
+                abierto ? "translate-y-0 opacity-100 delay-300" : "translate-y-12 opacity-0",
+              )}
+            >
+              <p className="mb-3 font-mono text-xs uppercase tracking-widest text-white/50">Secciones</p>
+              <div className="flex flex-wrap gap-2">
+                {SECCIONES.map((s) => {
+                  const on = pathname === rutaSeccion(s);
+                  return (
+                    <Link
+                      key={s.slug}
+                      href={rutaSeccion(s)}
+                      onClick={() => setAbierto(false)}
+                      aria-current={on ? "page" : undefined}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-base font-semibold transition-colors duration-700 ease-fluid",
+                        on ? "border-white bg-white text-ink" : "border-white/25 text-white/80",
+                      )}
+                    >
+                      {s.nombre}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </li>
           {contactoHref ? (
             <li className="overflow-hidden pt-6">
               <a

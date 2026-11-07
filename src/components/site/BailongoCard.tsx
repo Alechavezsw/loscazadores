@@ -138,22 +138,20 @@ export function BailongoCard({ enlace }: { enlace: string }) {
         )}
       </div>
 
-      {MARCAS.bailongo.logo ? (
-        <h3 className="mt-6">
-          <ImagenMarca
-            marca={MARCAS.bailongo}
-            className="h-28 w-auto max-w-full rounded-2xl bg-white object-contain p-3 md:h-32"
-          />
-        </h3>
-      ) : (
-        <h3 className="mt-6 text-4xl font-extrabold uppercase leading-[0.95] tracking-tight md:text-5xl">{BAILONGO.nombre}</h3>
-      )}
+      <h3 className="mt-6 text-4xl font-extrabold uppercase leading-[0.95] tracking-tight md:text-5xl">{BAILONGO.nombre}</h3>
       <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/90">{BAILONGO.texto}</p>
 
-      {/* La frecuencia, enorme y apagada: llena el centro de la tarjeta y dice dónde se escucha. */}
-      <p aria-hidden className="mt-8 select-none text-8xl font-bold leading-none tracking-tight text-white/20 md:text-9xl">
-        101.1<span className="ml-2 text-4xl md:text-5xl">FM</span>
-      </p>
+      {MARCAS.bailongo.logo ? (
+        // El logo (blanco) llena el centro de la tarjeta. El nombre del programa ya está en el título de arriba.
+        <div className="mt-6 flex">
+          <ImagenMarca marca={MARCAS.bailongo} decorativa className="h-44 w-auto max-w-full object-contain object-left md:h-56" />
+        </div>
+      ) : (
+        // Sin logo: la frecuencia, enorme y apagada, llena el centro y dice dónde se escucha.
+        <p aria-hidden className="mt-8 select-none text-8xl font-bold leading-none tracking-tight text-white/20 md:text-9xl">
+          101.1<span className="ml-2 text-4xl md:text-5xl">FM</span>
+        </p>
+      )}
 
       <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-4 pt-8">
         <button

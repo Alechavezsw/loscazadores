@@ -4,19 +4,22 @@ import { handleInstagram, linkWhatsapp, perfilInstagram, perfilYoutube, limpiarU
 import { CANALES, type Ajustes, type Anuncio, type Canal, type Noticia } from "@/lib/types";
 import { AdRail } from "./AdRail";
 import { ChannelCard } from "./ChannelCard";
+import type { VideoCanal } from "@/lib/youtube-canal";
 
 type Props = {
   noticias: Noticia[];
   anuncios: Anuncio[];
   ajustes: Ajustes;
+  /** El último video del canal de YouTube; la columna de YouTube lo muestra en lugar de una nota. */
+  ultimoVideo?: VideoCanal | null;
 };
 
-export function ChannelRail({ noticias, anuncios, ajustes }: Props) {
+export function ChannelRail({ noticias, anuncios, ajustes, ultimoVideo }: Props) {
   const perfil: Record<Canal, string> = {
     whatsapp: limpiarUrl(ajustes.whatsappCanal),
     instagram: perfilInstagram(ajustes.instagram),
     facebook: limpiarUrl(ajustes.facebook),
-    // La columna de YouTube es la de Toma TV: si no tiene su propio enlace, usa el canal de los programas.
+    // La columna de YouTube es la de TomateTV: si no tiene su propio enlace, usa el canal de los programas.
     youtube: perfilYoutube(ajustes.youtube) || perfilYoutube(ajustes.tomateve),
   };
   const handleIg = handleInstagram(ajustes.instagram);
@@ -41,6 +44,7 @@ export function ChannelRail({ noticias, anuncios, ajustes }: Props) {
                 noticia={noticias.find((n) => n.canales.includes(canal)) ?? null}
                 perfilUrl={perfil[canal]}
                 handleIg={handleIg}
+                video={canal === "youtube" ? ultimoVideo : null}
               />
             </Reveal>
           ))}

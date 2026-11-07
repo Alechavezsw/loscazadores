@@ -23,7 +23,8 @@ export const AJUSTES_BASE: Ajustes = {
     "La noticia no es la que los medios nos imponen. La noticia es la que vivimos a diario en nuestro entorno y nos pone en alerta. Compartí la tuya.",
   historiaTitulo: "Tu historia también cuenta",
   historiaTexto: "Si algo pasó en tu barrio y querés comentarlo",
-  tomateve: "",
+  // El canal oficial de TomateTV. Si el campo se deja vacío en Ajustes se vuelve a usar este (ver `completar`).
+  tomateve: "https://www.youtube.com/@somostomateve",
   radioEnlace: "",
   sincronizar: true,
   sincronizarPublicar: true,
@@ -180,7 +181,7 @@ export function seed(): Db {
       crear(
         "Novedades de servicios",
         "Acá se publican los anuncios y la información de servicios.\n\nNota de ejemplo: editala o borrala desde el panel.",
-        "Servicios",
+        "Servicios Sociales",
         [],
         30,
         { espacio: "si-san-juan" },
@@ -198,11 +199,14 @@ export function seed(): Db {
 
 /** Completa lo que falte de una base guardada con una versión anterior del sitio. */
 export function completar(db: Partial<Db> | null | undefined): Db {
+  const ajustes = { ...AJUSTES_BASE, ...(db?.ajustes ?? {}) };
+  // Una base guardada antes de que existiera el canal tiene este campo vacío y no heredaría el valor de AJUSTES_BASE.
+  if (!ajustes.tomateve?.trim()) ajustes.tomateve = AJUSTES_BASE.tomateve;
   return {
     noticias: db?.noticias ?? [],
     sinCensura: db?.sinCensura ?? [],
     anuncios: db?.anuncios ?? [],
-    ajustes: { ...AJUSTES_BASE, ...(db?.ajustes ?? {}) },
+    ajustes,
     meta: {
       conexion: db?.meta?.conexion ?? null,
       estado: { ...META_BASE.estado, ...(db?.meta?.estado ?? {}) },

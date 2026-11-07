@@ -11,12 +11,13 @@ function json(cuerpo: unknown, status = 200) {
 
 /**
  * Recibe un video como cuerpo crudo del pedido y lo guarda en disco mientras llega.
- * Solo sirve para quien está en el panel. Con Vercel Blob conectado no se usa: ahí el navegador sube directo a Blob.
+ * Solo sirve para quien está en el panel y solo sin base de datos ni Vercel Blob: con base los videos se suben por
+ * trozos a /api/videos/db, y con Blob el navegador sube directo a Blob.
  */
 export async function PUT(req: Request) {
   await connection();
   if (!(await esAdmin())) return json({ error: "Tenés que entrar al panel para subir videos." }, 401);
-  if (modoVideo() === "blob") return json({ error: "Este sitio sube los videos a Vercel Blob." }, 409);
+  if (modoVideo() !== "local") return json({ error: "Este sitio no guarda los videos en el disco." }, 409);
   if (!req.body) return json({ error: "No llegó ningún video." }, 400);
 
   const declarado = Number(req.headers.get("content-length") ?? 0);

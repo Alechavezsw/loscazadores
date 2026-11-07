@@ -7,6 +7,7 @@ import { guardarNoticia, type FormState } from "@/app/admin/actions";
 import { CANAL_UI } from "@/components/site/canales";
 import { cn } from "@/lib/cn";
 import { CANALES, CATEGORIAS, ESPACIO_INFO, ESPACIOS, type Canal, type Noticia } from "@/lib/types";
+import type { ModoVideo } from "@/lib/video-limites";
 import { ImagenCampo } from "./ImagenCampo";
 import { IncrustarCampo } from "./IncrustarCampo";
 import { VideoCampo } from "./VideoCampo";
@@ -14,7 +15,7 @@ import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "
 
 const INICIAL: FormState = { ok: false };
 
-export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo: "blob" | "local" }) {
+export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo: ModoVideo }) {
   const [estado, accion, pendiente] = useActionState(guardarNoticia, INICIAL);
   const [canales, setCanales] = useState<Set<Canal>>(new Set(noticia?.canales ?? []));
   const errores = estado.errores ?? {};
@@ -92,7 +93,12 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
             </select>
           </Campo>
 
-          <Campo id="categoria" etiqueta="Categoría" error={errores.categoria}>
+          <Campo
+            id="categoria"
+            etiqueta="Categoría"
+            error={errores.categoria}
+            ayuda="Servicios Sociales, Comunidad, Solidario, Eventos, Carta Abierta y Entrevista son secciones del sitio: la nota aparece también en la página de su sección."
+          >
             <select
               id="categoria"
               name="categoria"

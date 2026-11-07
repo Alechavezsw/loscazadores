@@ -5,16 +5,18 @@ import { randomBytes } from "node:crypto";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { del } from "@vercel/blob";
-import { UPLOADS_DIR } from "./store";
+import { UPLOADS_DIR, usaPostgres } from "./store";
+import { borrarVideoEnBd } from "./store-pg";
+import { MAX_VIDEO_BYTES, TIPOS_VIDEO, type ModoVideo } from "./video-limites";
 
 /**
- * Videos subidos. Con Vercel Blob conectado (BLOB_READ_WRITE_TOKEN) el navegador los sube directo a Blob,
- * porque una función de Vercel no recibe pedidos de más de 4,5 MB. Sin Blob (tu computadora o un servidor
- * propio) se guardan en el disco y se sirven desde /media/video, con soporte para adelantar y retroceder.
+ * Videos subidos. Con una base Postgres (DATABASE_URL) se guardan en la base, por trozos, y se sirven desde
+ * /media/video con soporte para adelantar y retroceder: es lo que funciona en Vercel. Sin base pero con Vercel Blob
+ * (BLOB_READ_WRITE_TOKEN) el navegador los sube directo a Blob. Sin ninguna de las dos (tu computadora o un
+ * servidor propio) se guardan en el disco.
  */
 
-export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
-export const TIPOS_VIDEO = ["video/mp4", "video/webm", "video/quicktime"] as const;
+export { MAX_VIDEO_BYTES, TIPOS_VIDEO };
 export const VIDEOS_DIR = path.join(UPLOADS_DIR, "videos");
 
 export const NOMBRE_VIDEO_VALIDO = /^[a-f0-9]{16}\.(mp4|webm|mov)$/;
@@ -23,14 +25,15 @@ const URL_BLOB_VALIDA = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.co
 /** Lo que se anota en una noticia tiene que ser un archivo nuestro o una dirección de nuestro Blob, nada más. */
 export const videoValido = (v: string) => NOMBRE_VIDEO_VALIDO.test(v) || URL_BLOB_VALIDA.test(v);
 
-export const modoVideo = (): "blob" | "local" => (process.env.BLOB_READ_WRITE_TOKEN ? "blob" : "local");
+/** La base va primero: en Vercel es lo único que persiste sin pasos extra. Blob queda como respaldo. */
+export const modoVideo = (): ModoVideo => (usaPostgres() ? "bd" : process.env.BLOB_READ_WRITE_TOKEN ? "blob" : "local");
 
 export class ErrorVideo extends Error {}
 
-const EXTENSION: Record<string, string> = { "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov" };
+export const EXTENSION: Record<string, string> = { "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov" };
 
 /** Mira los primeros bytes: que el archivo diga ser un video no alcanza. */
-function pareceVideo(cabecera: Buffer, ext: string) {
+export function pareceVideo(cabecera: Buffer, ext: string) {
   if (ext === "webm") return cabecera.length >= 4 && cabecera.readUInt32BE(0) === 0x1a45dfa3;
   if (cabecera.length < 8) return false;
   return ["ftyp", "moov", "mdat", "wide", "free", "skip"].includes(cabecera.subarray(4, 8).toString("latin1"));
@@ -80,5 +83,6 @@ export async function borrarVideo(valor: string | null | undefined) {
     return;
   }
   if (!NOMBRE_VIDEO_VALIDO.test(valor)) return;
+  if (usaPostgres()) await borrarVideoEnBd(valor).catch(() => undefined);
   await fs.rm(path.join(VIDEOS_DIR, valor), { force: true });
 }

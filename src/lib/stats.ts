@@ -10,6 +10,7 @@ import { motorStatsPg } from "./stats-pg";
 import { juntar, type Incremento, type MotorStats } from "./stats-motor";
 import { urlPostgres } from "./store-base";
 import { urlSitio } from "./sitio";
+import { rutaSeccion, SECCIONES } from "./types";
 import { analizarUA, type LecturaUA } from "./ua";
 
 /**
@@ -45,7 +46,17 @@ const texto = (v: unknown, max: number) => (typeof v === "string" ? v.trim().sli
 
 // ───────────────────────── validación ─────────────────────────
 
-const ESTATICAS = new Set(["/", "/noticias", "/en-vivo", "/videos", "/viva-feria", "/si-san-juan", "/privacidad", "/terminos"]);
+const ESTATICAS = new Set([
+  "/",
+  "/noticias",
+  "/en-vivo",
+  "/videos",
+  "/viva-feria",
+  "/si-san-juan",
+  "/privacidad",
+  "/terminos",
+  ...SECCIONES.map(rutaSeccion),
+]);
 
 /** Solo páginas que existen. Cualquier otra dirección se junta en "/otras" para que nadie llene la base de rutas inventadas. */
 async function normalizarRuta(crudo: unknown): Promise<string | null> {

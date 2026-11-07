@@ -2,6 +2,7 @@ import "server-only";
 import { Pool } from "pg";
 import { completar, seed, urlPostgres, type Motor } from "./store-base";
 import type { Db } from "./types";
+import { TROZO_VIDEO_BYTES } from "./video-limites";
 
 /**
  * Motor Postgres, para hostings sin disco propio como Vercel.
@@ -48,6 +49,21 @@ function asegurarEsquema() {
        CREATE TABLE IF NOT EXISTS lc_imagenes (
          nombre text PRIMARY KEY,
          datos bytea NOT NULL
+       );
+       CREATE TABLE IF NOT EXISTS lc_videos (
+         nombre text PRIMARY KEY,
+         tipo text NOT NULL,
+         bytes bigint NOT NULL,
+         completo boolean NOT NULL DEFAULT false,
+         creada timestamptz NOT NULL DEFAULT now()
+       );
+       CREATE TABLE IF NOT EXISTS lc_video_trozos (
+         nombre text NOT NULL REFERENCES lc_videos (nombre) ON DELETE CASCADE,
+         n integer NOT NULL,
+         inicio bigint NOT NULL,
+         largo integer NOT NULL,
+         datos bytea NOT NULL,
+         PRIMARY KEY (nombre, n)
        );`,
     )
     .then(() => undefined)
@@ -135,6 +151,81 @@ export async function leerImagenEnBd(nombre: string): Promise<Buffer | null> {
 export async function borrarImagenEnBd(nombre: string) {
   await asegurarEsquema();
   await conexion().query("DELETE FROM lc_imagenes WHERE nombre = $1", [nombre]);
+}
+
+// ───────────────────────────── Videos ─────────────────────────────
+// Un video se guarda en trozos (lc_video_trozos) porque una función de Vercel no recibe pedidos de más de 4,5 MB:
+// el panel manda un trozo por pedido. Mientras no se cierra la subida, la fila de lc_videos queda incompleta y el
+// video no se sirve. Los trozos se borran solos con su video (ON DELETE CASCADE).
+
+export type InfoVideo = { tipo: string; bytes: number; completo: boolean };
+
+/** Abre la subida de un video. De paso limpia las subidas que quedaron a medias hace más de dos horas. */
+export async function iniciarVideoEnBd(nombre: string, tipo: string, bytes: number) {
+  await asegurarEsquema();
+  const q = conexion();
+  await q.query("DELETE FROM lc_videos WHERE NOT completo AND creada < now() - interval '2 hours'");
+  await q.query("INSERT INTO lc_videos (nombre, tipo, bytes) VALUES ($1, $2, $3)", [nombre, tipo, bytes]);
+}
+
+export async function infoVideoEnBd(nombre: string): Promise<InfoVideo | null> {
+  await asegurarEsquema();
+  const r = await conexion().query<{ tipo: string; bytes: string; completo: boolean }>(
+    "SELECT tipo, bytes, completo FROM lc_videos WHERE nombre = $1",
+    [nombre],
+  );
+  const f = r.rows[0];
+  return f ? { tipo: f.tipo, bytes: Number(f.bytes), completo: f.completo } : null;
+}
+
+/** Guarda un trozo. Si el navegador lo reenvía (por un corte), lo reemplaza. */
+export async function guardarTrozoVideoEnBd(nombre: string, n: number, inicio: number, datos: Buffer) {
+  await asegurarEsquema();
+  await conexion().query(
+    `INSERT INTO lc_video_trozos (nombre, n, inicio, largo, datos) VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (nombre, n) DO UPDATE SET inicio = EXCLUDED.inicio, largo = EXCLUDED.largo, datos = EXCLUDED.datos`,
+    [nombre, n, inicio, datos.length, datos],
+  );
+}
+
+/** Cierra la subida si están todos los trozos y suman lo declarado. Si no, borra lo subido y devuelve false. */
+export async function terminarVideoEnBd(nombre: string): Promise<boolean> {
+  await asegurarEsquema();
+  const r = await conexion().query(
+    `UPDATE lc_videos v SET completo = true
+      WHERE v.nombre = $1 AND NOT v.completo
+        AND (SELECT coalesce(sum(largo), 0) FROM lc_video_trozos WHERE nombre = v.nombre) = v.bytes
+        AND (SELECT count(*) FROM lc_video_trozos WHERE nombre = v.nombre) = ceil(v.bytes::numeric / $2::numeric)`,
+    [nombre, TROZO_VIDEO_BYTES],
+  );
+  if (r.rowCount === 1) return true;
+  await borrarVideoEnBd(nombre);
+  return false;
+}
+
+/** Las medidas de los trozos que cubren el tramo [inicio, fin] del video (los bytes se leen de a uno). */
+export async function trozosDeVideoEnBd(nombre: string, inicio: number, fin: number) {
+  await asegurarEsquema();
+  const r = await conexion().query<{ n: number; inicio: string; largo: number }>(
+    `SELECT n, inicio, largo FROM lc_video_trozos
+      WHERE nombre = $1 AND inicio <= $3 AND inicio + largo > $2
+      ORDER BY n`,
+    [nombre, inicio, fin],
+  );
+  return r.rows.map((x) => ({ n: x.n, inicio: Number(x.inicio), largo: x.largo }));
+}
+
+export async function leerTrozoVideoEnBd(nombre: string, n: number): Promise<Buffer | null> {
+  await asegurarEsquema();
+  const r = await conexion().query<{ datos: Buffer }>("SELECT datos FROM lc_video_trozos WHERE nombre = $1 AND n = $2", [nombre, n]);
+  const datos = r.rows[0]?.datos;
+  if (!datos) return null;
+  return Buffer.isBuffer(datos) ? datos : Buffer.from(datos);
+}
+
+export async function borrarVideoEnBd(nombre: string) {
+  await asegurarEsquema();
+  await conexion().query("DELETE FROM lc_videos WHERE nombre = $1", [nombre]);
 }
 
 export const motorPg: Motor = {

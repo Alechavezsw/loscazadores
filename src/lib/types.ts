@@ -15,10 +15,35 @@ export const CATEGORIAS = [
   "Deportes",
   "Clima",
   "Servicios",
+  "Servicios Sociales",
   "Comunidad",
+  "Solidario",
   "Eventos",
+  "Carta Abierta",
+  "Entrevista",
   "Espectáculos",
 ] as const;
+
+export type Categoria = (typeof CATEGORIAS)[number];
+
+/**
+ * Las secciones del sitio, en el orden en que se muestran en el menú. Cada una es una categoría de la noticia y
+ * tiene su propia página (/secciones/<slug>) con todas las notas de esa categoría. Los textos de «bajada» son
+ * provisorios: se ajustan acá.
+ */
+export type Seccion = { slug: string; nombre: Categoria; bajada: string };
+
+export const SECCIONES: readonly Seccion[] = [
+  { slug: "servicios-sociales", nombre: "Servicios Sociales", bajada: "Información y ayuda para los vecinos de San Juan." },
+  { slug: "comunidad", nombre: "Comunidad", bajada: "Lo que pasa en los barrios y lo que hacen los vecinos." },
+  { slug: "solidario", nombre: "Solidario", bajada: "Campañas, colectas y gestos solidarios." },
+  { slug: "eventos", nombre: "Eventos", bajada: "Lo que se viene y lo que pasó en San Juan." },
+  { slug: "carta-abierta", nombre: "Carta Abierta", bajada: "Cartas abiertas que llegan a la redacción." },
+  { slug: "entrevista", nombre: "Entrevista", bajada: "Charlas con los protagonistas de la noticia." },
+];
+
+export const seccionPorSlug = (slug: string) => SECCIONES.find((s) => s.slug === slug);
+export const rutaSeccion = (s: Seccion) => `/secciones/${s.slug}`;
 
 /**
  * Espacios fijos de la portada que se alimentan con noticias propias: cada noticia puede pertenecer a uno

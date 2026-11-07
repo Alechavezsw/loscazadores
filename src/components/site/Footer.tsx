@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { WhatsappLogo } from "@phosphor-icons/react/ssr";
 import { limpiarUrl, perfilInstagram, perfilYoutube, telefonoLegible } from "@/lib/urls";
-import { ESPACIO_INFO, ESPACIOS, type Ajustes } from "@/lib/types";
+import { ESPACIO_INFO, ESPACIOS, rutaSeccion, SECCIONES, type Ajustes } from "@/lib/types";
 import { CANAL_UI } from "./canales";
 import { Logo } from "./Brand";
 
@@ -18,7 +18,7 @@ export function Footer({ ajustes, contactoHref }: { ajustes: Ajustes; contactoHr
 
   return (
     <footer className="bg-ink text-white">
-      <div className="mx-auto grid max-w-[1440px] gap-12 px-4 py-16 md:grid-cols-[1.4fr_1fr_1fr] md:px-6">
+      <div className="mx-auto grid max-w-[1440px] gap-12 px-4 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-6">
         <div className="flex flex-col items-start gap-6">
           <Link href="/" aria-label="Los Cazadores de Noticias, ir al inicio">
             <Logo className="w-56 md:w-72" />
@@ -40,6 +40,17 @@ export function Footer({ ajustes, contactoHref }: { ajustes: Ajustes; contactoHr
 
         <nav aria-label="Secciones">
           <p className="mb-4 font-mono text-xs uppercase tracking-widest text-white/50">Secciones</p>
+          <ul className="flex flex-col gap-3">
+            {SECCIONES.map((s) => (
+              <li key={s.slug}>
+                <Link href={rutaSeccion(s)} className={enlace}>{s.nombre}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav aria-label="Navegación">
+          <p className="mb-4 font-mono text-xs uppercase tracking-widest text-white/50">Navegar</p>
           <ul className="flex flex-col gap-3">
             <li><Link href="/" className={enlace}>Inicio</Link></li>
             <li><Link href="/noticias" className={enlace}>Noticias</Link></li>

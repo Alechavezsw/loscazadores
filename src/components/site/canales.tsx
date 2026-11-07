@@ -39,7 +39,7 @@ export const CANAL_UI: Record<
     boton: "bg-ink hover:bg-hunter",
     cta: "Ver en Facebook",
   },
-  // El canal de YouTube es el de Toma TV, por donde salen los programas.
+  // El canal de YouTube es el de TomateTV, por donde salen los programas.
   youtube: {
     nombre: MARCAS.tomateve.nombre,
     corto: "YouTube",
@@ -47,6 +47,6 @@ export const CANAL_UI: Record<
     logo: MARCAS.tomateve.logo,
     barra: "bg-hunter",
     boton: "bg-ink hover:bg-hunter",
-    cta: "Ver Toma TV",
+    cta: "Ver TomateTV",
   },
 };
