@@ -45,10 +45,16 @@ export function condicionDelCodigo(codigo: number): string {
   return "Nublado";
 }
 
+/** Un grado para mostrar: 16.6 → «16,6°», 11 → «11°». */
+export function grados(n: number) {
+  const texto = Number.isInteger(n) ? String(n) : n.toFixed(1).replace(".", ",");
+  return `${texto}°`;
+}
+
 /** El tiempo actual en San Juan. Se renueva solo, sin pasar por el panel. */
 export async function getClimaSanJuan(): Promise<Clima | null> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife({ stale: 120, revalidate: 120, expire: 600 });
 
   const params = new URLSearchParams({
     latitude: String(SAN_JUAN.lat),
@@ -75,7 +81,7 @@ export async function getClimaSanJuan(): Promise<Clima | null> {
       return null;
     }
     return {
-      temperatura: Math.round(actual.temperature_2m),
+      temperatura: Math.round(actual.temperature_2m * 10) / 10,
       sensacion: Math.round(actual.apparent_temperature),
       minima: Math.round(data.daily?.temperature_2m_min?.[0] ?? actual.temperature_2m),
       maxima: Math.round(data.daily?.temperature_2m_max?.[0] ?? actual.temperature_2m),

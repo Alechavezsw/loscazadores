@@ -12,7 +12,7 @@ function Casillero({ marca, copia }: { marca: Marca; copia: boolean }) {
       aria-hidden={copia || undefined}
       className={cn(
         "flex h-24 w-56 shrink-0 items-center justify-center rounded-2xl px-6 py-3",
-        marca.fondo === "rojo" ? "bg-hunter text-white" : "bg-white text-ink",
+        marca.fondo === "rojo" ? "bg-hunter text-white" : marca.fondo === "oscuro" ? "bg-ink" : "bg-white text-ink",
         // Quien prefiere menos movimiento ve una sola vuelta de la lista, quieta.
         copia && "motion-reduce:hidden",
       )}

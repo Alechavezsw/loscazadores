@@ -47,6 +47,6 @@ export const CANAL_UI: Record<
     logo: MARCAS.tomateve.logo,
     barra: "bg-hunter",
     boton: "bg-ink hover:bg-hunter",
-    cta: "Ver TomateTV",
+    cta: "Ver Tomateve",
   },
 };

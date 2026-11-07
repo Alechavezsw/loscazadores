@@ -6,7 +6,7 @@ import { RADIO } from "./radio";
  */
 
 export const TOMATEVE = {
-  nombre: "TomateTV",
+  nombre: "Tomateve",
   zona: "America/Argentina/San_Juan",
 } as const;
 

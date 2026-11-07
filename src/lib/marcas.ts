@@ -9,7 +9,7 @@ export type Marca = {
   /** Usa el logo propio del sitio (el de Los Cazadores) en lugar de un archivo. */
   sitio?: boolean;
   /** De qué color es el casillero donde se muestra el logo. Un logo blanco necesita fondo rojo. Por defecto, claro. */
-  fondo?: "claro" | "rojo";
+  fondo?: "claro" | "rojo" | "oscuro";
   /**
    * De un programa: quién lo conduce (si se sabe) y por dónde sale. El horario y el aviso «Próximamente» salen de
    * la programación (lib/programas.ts).
@@ -21,10 +21,10 @@ export type Marca = {
   };
 };
 
-const EMISION_TDA = "TomateTV Streaming y la Televisión Digital Abierta, canal 35.2, señal La Retro";
+const EMISION_TDA = "Tomateve Streaming y la Televisión Digital Abierta, canal 35.2, señal La Retro";
 
 export const MARCAS = {
-  tomateve: { nombre: "TomateTV", logo: "/brand/tomate-tv.png" },
+  tomateve: { nombre: "Tomateve", logo: "/brand/tomate-tv.png", fondo: "oscuro" },
   rockola: {
     nombre: "La Rockola de Beethoven",
     logo: "/brand/rockola-beethoven.png",
@@ -37,7 +37,7 @@ export const MARCAS = {
   madres: {
     nombre: "Madres en Corto",
     logo: "/brand/madres-en-corto.png",
-    detalle: { conduce: "Conduce", conduccion: "Marianella Zeballos", emision: "TomateTV Streaming" },
+    detalle: { conduce: "Conduce", conduccion: "Marianella Zeballos", emision: "Tomateve Streaming" },
   },
   cazadores: { nombre: "Los Cazadores de Noticias", logo: null, sitio: true, detalle: { emision: EMISION_TDA } },
   radio: { nombre: "Radio del Sur", logo: null },
@@ -64,7 +64,7 @@ export const MEDIOS_AMIGOS: readonly MedioAmigo[] = [
 ];
 
 /** Los programas que recorre el carrusel del final de la portada. Se suma uno nuevo acá, apenas tenga logo. */
-export const CARRUSEL_PROGRAMAS: readonly Marca[] = [MARCAS.rockola, MARCAS.madres, MARCAS.bailongo, MARCAS.cazadores];
+export const CARRUSEL_PROGRAMAS: readonly Marca[] = [MARCAS.tomateve, MARCAS.rockola, MARCAS.madres, MARCAS.bailongo, MARCAS.cazadores];
 
 /** Los programas que salen por TomateTV, en el orden en que se muestran. */
 export const PROGRAMAS_TOMATE: readonly Marca[] = [MARCAS.rockola, MARCAS.madres, MARCAS.cazadores];

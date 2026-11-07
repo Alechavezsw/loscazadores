@@ -1,5 +1,6 @@
 import { Cloud, CloudFog, CloudLightning, CloudRain, CloudSun, Snowflake, Sun } from "@phosphor-icons/react/ssr";
-import { getClimaSanJuan, type Clima } from "@/lib/clima";
+import { getClimaSanJuan, grados, type Clima } from "@/lib/clima";
+import { RelojSanJuan } from "./RelojSanJuan";
 
 function Icono({ condicion, clase = "size-8" }: { condicion: string; clase?: string }) {
   if (condicion === "Despejado" || condicion === "Mayormente despejado") return <Sun weight="fill" className={clase} />;
@@ -22,7 +23,7 @@ export async function ClimaCard() {
           {clima ? (
             <>
               <Icono condicion={clima.condicion} />
-              <span className="text-2xl font-bold leading-none tracking-tight">{clima.temperatura}°</span>
+              <span className="text-2xl font-bold leading-none tracking-tight">{grados(clima.temperatura)}</span>
             </>
           ) : (
             <Cloud weight="fill" className="size-8 text-white/70" />
@@ -44,19 +45,18 @@ export async function ClimaMini() {
   if (!clima) return null;
 
   return (
-    <p
-      aria-label={`Clima en San Juan a las ${clima.hora}: ${clima.condicion}, ${clima.temperatura} grados`}
-      className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-xl"
-    >
-      <Icono condicion={clima.condicion} clase="size-4 text-hunter" />
-      <span className="text-lg font-bold leading-none tabular-nums">{clima.temperatura}°</span>
-      <span className="flex flex-col items-start leading-tight">
-        <span>
+    <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/40 py-1.5 pl-2.5 pr-3.5 text-white backdrop-blur-xl">
+      <Icono condicion={clima.condicion} clase="size-5 text-hunter" />
+      <span className="text-lg font-bold leading-none tabular-nums">{grados(clima.temperatura)}</span>
+      <span className="flex flex-col items-start text-left leading-tight">
+        <span className="text-xs font-semibold">
           {clima.condicion}
-          {clima.hora ? <span className="text-white/50"> · {clima.hora}</span> : null}
+          <span className="font-medium text-white/50"> · </span>
+          <span className="sr-only">hora de San Juan </span>
+          <RelojSanJuan className="tabular-nums" />
         </span>
-        <span className="text-[10px] font-medium text-white/55">
-          San Juan · {clima.minima}° / {clima.maxima}°
+        <span className="text-xs font-medium text-white/60">
+          mín {clima.minima}° · máx {clima.maxima}°
         </span>
       </span>
     </p>
@@ -65,5 +65,5 @@ export async function ClimaMini() {
 
 function detalle(clima: Clima | null) {
   if (!clima) return "El clima de San Juan no está disponible en este momento.";
-  return `San Juan · ${clima.minima}° / ${clima.maxima}° · sensación ${clima.sensacion}° · viento ${clima.viento} km/h`;
+  return `San Juan · mín ${clima.minima}° · máx ${clima.maxima}° · sensación ${clima.sensacion}° · viento ${clima.viento} km/h`;
 }

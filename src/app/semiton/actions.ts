@@ -513,7 +513,7 @@ export async function guardarAjustes(_prev: FormState, fd: FormData): Promise<Fo
   if (a.historiaTitulo.length < 3 || a.historiaTitulo.length > 60) errores.historiaTitulo = "Escribí el título, de 3 a 60 caracteres.";
   if (a.historiaTexto.length < 10 || a.historiaTexto.length > 200) errores.historiaTexto = "Escribí el texto, de 10 a 200 caracteres.";
   if (a.tomateve && !urlLiveDelCanal(a.tomateve)) {
-    errores.tomateve = "Escribí el @usuario del canal de TomateTV, su ID que empieza con UC o el enlace del canal.";
+    errores.tomateve = "Escribí el @usuario del canal de Tomateve, su ID que empieza con UC o el enlace del canal.";
   }
   if (a.radioEnlace && !limpiarUrl(a.radioEnlace)) errores.radioEnlace = "Pegá el enlace completo para escuchar la radio.";
 
