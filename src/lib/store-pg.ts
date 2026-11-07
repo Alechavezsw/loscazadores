@@ -19,16 +19,59 @@ declare global {
   var __lcPool: Pool | undefined;
 }
 
+/**
+ * Cuántas conexiones abre este proceso. El pooler en modo sesión reparte 15 entre todo el proyecto
+ * (el build, el sitio publicado y la computadora de desarrollo). Una por proceso alcanza: las consultas
+ * esperan su turno en vez de abrir otra.
+ */
+function topeDelPool() {
+  if (process.env.NEXT_PHASE === "phase-production-build") return 1;
+  const pedido = Number(process.env.PGPOOL_MAX);
+  return Number.isFinite(pedido) && pedido >= 1 ? pedido : 1;
+}
+
+function poolLleno(e: unknown) {
+  if (typeof e !== "object" || e === null || !("message" in e)) return false;
+  const mensaje = String((e as { message: unknown }).message);
+  return mensaje.includes("EMAXCONNSESSION") || mensaje.includes("max clients reached");
+}
+
+/** Vuelve a intentar si el pooler no tenía un lugar libre en ese momento. */
+async function conCupo<T>(trabajo: () => Promise<T>): Promise<T> {
+  let espera = 500;
+  for (let intento = 0; ; intento++) {
+    try {
+      return await trabajo();
+    } catch (e) {
+      if (intento >= 5 || !poolLleno(e)) throw e;
+      await new Promise((resolver) => setTimeout(resolver, espera));
+      espera *= 2;
+    }
+  }
+}
+
 // El pool vive en globalThis para que el recargado de módulos en desarrollo no abra conexiones de más.
 // Las estadísticas usan este mismo pool.
 export function conexion() {
-  globalThis.__lcPool ??= new Pool({
-    connectionString: urlPostgres(),
-    // En una función serverless cada instancia necesita pocas conexiones. Neon las junta en su pooler.
-    max: Number(process.env.PGPOOL_MAX ?? 3),
-    idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 15_000,
-  });
+  const max = topeDelPool();
+  const anterior = globalThis.__lcPool;
+  if (anterior && anterior.options.max !== max) {
+    void anterior.end().catch(() => undefined);
+    globalThis.__lcPool = undefined;
+  }
+  if (!globalThis.__lcPool) {
+    const pool = new Pool({
+      connectionString: urlPostgres(),
+      max,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 15_000,
+    });
+    const consultar = pool.query.bind(pool) as (...args: unknown[]) => Promise<unknown>;
+    const conectar = pool.connect.bind(pool) as (...args: unknown[]) => Promise<unknown>;
+    pool.query = ((...args: unknown[]) => conCupo(() => consultar(...args))) as typeof pool.query;
+    pool.connect = ((...args: unknown[]) => conCupo(() => conectar(...args))) as typeof pool.connect;
+    globalThis.__lcPool = pool;
+  }
   return globalThis.__lcPool;
 }
 
