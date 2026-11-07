@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { ArrowUpRight, YoutubeLogo } from "@phosphor-icons/react/ssr";
+import { ArrowUpRight, Clock, Microphone, TelevisionSimple, YoutubeLogo } from "@phosphor-icons/react/ssr";
 import { MARCAS, PROGRAMAS_TOMATE, type Marca } from "@/lib/marcas";
 import {
   esProximamente,
@@ -13,44 +13,67 @@ import {
   TOMATEVE,
 } from "@/lib/programas";
 import type { LiveStatus } from "@/lib/types";
-import { FichaMarca, ImagenMarca } from "./FichaMarca";
+import { Logo } from "./Brand";
+import { ImagenMarca } from "./FichaMarca";
+import type { VideoCanal } from "@/lib/youtube-canal";
 import { EnVivoInsignia, Reproductor } from "./LiveSection";
+import { UltimoVideo } from "./UltimoVideo";
 
-/** Cuándo se emite, quién conduce y por dónde sale un programa, para mostrar bajo su logo. */
-function DetallePrograma({ marca }: { marca: Marca }) {
+/** Un programa de TomateTV: logo, horario, quién conduce y por dónde sale. */
+function ProgramaFila({ marca }: { marca: Marca }) {
   const horario = horarioDe(marca.nombre);
   const d = marca.detalle;
-  if (!horario && !d) return null;
 
-  const rotulo = "text-xs font-bold uppercase tracking-widest text-white/50";
   return (
-    <dl className="flex flex-col gap-2 text-sm leading-snug">
-      {horario ? (
-        <div>
-          <dt className="sr-only">Horario</dt>
-          <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 font-semibold text-white">
-            {horario}
+    <li className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+      <div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-white px-1.5 text-ink">
+        {marca.sitio ? (
+          <>
+            <Logo className="w-14" />
+            <span className="sr-only">{marca.nombre}</span>
+          </>
+        ) : marca.logo ? (
+          <ImagenMarca marca={marca} className="max-h-full max-w-full object-contain" />
+        ) : (
+          <span className="text-center text-[10px] font-extrabold uppercase leading-tight">{marca.nombre}</span>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-bold leading-tight">{marca.nombre}</p>
+        {horario ? (
+          <p className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-hunter px-2.5 py-1 text-xs font-semibold">
+              <Clock weight="fill" className="size-3.5" aria-hidden />
+              <span className="sr-only">Horario. </span>
+              {horario}
+            </span>
             {esProximamente(marca.nombre) ? (
-              <span className="rounded-full bg-hunter px-2 py-0.5 text-[11px] font-bold uppercase tracking-widest">Próximamente</span>
+              <span className="rounded-full border border-white/25 px-2 py-1 text-[11px] font-bold uppercase tracking-widest text-white/80">
+                Próximamente
+              </span>
             ) : null}
-          </dd>
-        </div>
-      ) : null}
-      {d ? (
-        <>
-          {d.conduce && d.conduccion ? (
-            <div>
-              <dt className={rotulo}>{d.conduce}</dt>
-              <dd className="text-white/80">{d.conduccion}</dd>
-            </div>
-          ) : null}
-          <div>
-            <dt className={rotulo}>Emitido por</dt>
-            <dd className="text-white/80">{d.emision}</dd>
-          </div>
-        </>
-      ) : null}
-    </dl>
+          </p>
+        ) : null}
+        {d?.conduce && d.conduccion ? (
+          <p className="mt-2 flex items-start gap-1.5 text-xs leading-snug text-white/75">
+            <Microphone weight="fill" className="mt-0.5 size-3.5 shrink-0 text-hunter" aria-hidden />
+            <span>
+              <span className="sr-only">{d.conduce}. </span>
+              {d.conduccion}
+            </span>
+          </p>
+        ) : null}
+        {d?.emision ? (
+          <p className="mt-1.5 flex items-start gap-1.5 text-xs leading-snug text-white/55">
+            <TelevisionSimple weight="fill" className="mt-0.5 size-3.5 shrink-0 text-white/40" aria-hidden />
+            <span>
+              <span className="sr-only">Emitido por. </span>
+              {d.emision}
+            </span>
+          </p>
+        ) : null}
+      </div>
+    </li>
   );
 }
 
@@ -65,7 +88,16 @@ function suscribirMinuto(avisar: () => void) {
  * porque los navegadores no dejan sonar a una página hasta que la persona lo pide) con la insignia EN VIVO.
  * Fuera de horario muestra cuándo vuelve a salir al aire.
  */
-export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; canalUrl: string }) {
+export function TomateveCard({
+  configurado,
+  canalUrl,
+  video = null,
+}: {
+  configurado: boolean;
+  canalUrl: string;
+  /** El último video subido al canal. Se ve en el cuadro cuando no hay transmisión en vivo. */
+  video?: VideoCanal | null;
+}) {
   const [estado, setEstado] = useState<LiveStatus | null>(null);
   // Dos lecturas de texto (y no un objeto), porque useSyncExternalStore necesita un valor estable entre lecturas.
   const proxima = useSyncExternalStore(suscribirMinuto, () => proximaTomateve(new Date()), () => PRIMERA_EMISION.cuando);
@@ -131,9 +163,11 @@ export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; 
         )}
       </header>
 
-      <div className="relative aspect-video bg-ink-1">
+      <div className="relative aspect-video overflow-hidden bg-ink-1">
         {en ? (
           <Reproductor videoId={en.videoId!} titulo={en.titulo ?? `${TOMATEVE.nombre} en vivo`} />
+        ) : video ? (
+          <UltimoVideo video={video} lleno />
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-ink-2 to-ink px-6 text-center">
             <YoutubeLogo weight="fill" className="size-10 text-hunter" aria-hidden />
@@ -149,15 +183,17 @@ export function TomateveCard({ configurado, canalUrl }: { configurado: boolean; 
         <p className="text-sm leading-relaxed text-white/70">
           {en
             ? "Estás viendo el programa en vivo. Empieza sin sonido: tocá el parlante del reproductor para activarlo."
-            : `${TOMATEVE.nombre} transmite ${PROGRAMACION_FRASE}. Cuando empiece, lo vas a ver acá mismo.`}
+            : video
+              ? `${TOMATEVE.nombre} transmite ${PROGRAMACION_FRASE}.`
+              : `${TOMATEVE.nombre} transmite ${PROGRAMACION_FRASE}. Cuando empiece, lo vas a ver acá mismo.`}
         </p>
         <div>
           <p id="programas-tomate" className="mb-2 text-xs font-bold uppercase tracking-widest text-white/50">
             Programas
           </p>
-          <ul aria-labelledby="programas-tomate" className="grid gap-3 sm:grid-cols-3">
+          <ul aria-labelledby="programas-tomate" className="flex flex-col gap-3">
             {PROGRAMAS_TOMATE.map((p) => (
-              <FichaMarca key={p.nombre} marca={p} detalle={<DetallePrograma marca={p} />} />
+              <ProgramaFila key={p.nombre} marca={p} />
             ))}
           </ul>
         </div>

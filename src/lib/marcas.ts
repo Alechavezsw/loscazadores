@@ -60,7 +60,7 @@ export type MedioAmigo = {
 
 /** Los medios aliados, en el orden en que se muestran. Se suma uno nuevo acá, con su logo y su enlace. */
 export const MEDIOS_AMIGOS: readonly MedioAmigo[] = [
-  { nombre: "Radio del Sur", tipo: "Radio", logo: MARCAS.radio.logo, enlaceDeLaRadio: true },
+  { nombre: "Radio del Sur", tipo: "Radio", logo: MARCAS.radio.logo, enlace: "https://www.instagram.com/radio_delsur/" },
 ];
 
 /** Los programas que recorre el carrusel del final de la portada. Se suma uno nuevo acá, apenas tenga logo. */

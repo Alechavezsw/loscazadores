@@ -1,6 +1,7 @@
 import { ArrowDown, WhatsappLogo } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
 import { Logo } from "./Brand";
+import { ClimaMini } from "./ClimaCard";
 import { FondoNoche } from "./Fondo";
 import { MastheadFX } from "./MastheadFX";
 
@@ -30,7 +31,11 @@ export function Masthead({ lema, contactoHref }: { lema: string; contactoHref: s
           </p>
         </Reveal>
 
-        <Reveal immediate delay={0.45} y={16} className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <Reveal immediate delay={0.35} y={12} className="mt-6">
+          <ClimaMini />
+        </Reveal>
+
+        <Reveal immediate delay={0.45} y={16} className="mt-8 flex flex-wrap items-center justify-center gap-3">
           {contactoHref ? (
             <a
               href={contactoHref}

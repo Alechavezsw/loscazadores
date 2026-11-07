@@ -1,8 +1,7 @@
 import { Cloud, CloudFog, CloudLightning, CloudRain, CloudSun, Snowflake, Sun } from "@phosphor-icons/react/ssr";
 import { getClimaSanJuan, type Clima } from "@/lib/clima";
 
-function Icono({ condicion }: { condicion: string }) {
-  const clase = "size-8";
+function Icono({ condicion, clase = "size-8" }: { condicion: string; clase?: string }) {
   if (condicion === "Despejado" || condicion === "Mayormente despejado") return <Sun weight="fill" className={clase} />;
   if (condicion === "Parcialmente nublado") return <CloudSun weight="fill" className={clase} />;
   if (condicion === "Niebla") return <CloudFog weight="fill" className={clase} />;
@@ -36,6 +35,31 @@ export async function ClimaCard() {
         </div>
       </div>
     </article>
+  );
+}
+
+/** Pastilla chica para la cabecera: temperatura, estado y ciudad. */
+export async function ClimaMini() {
+  const clima = await getClimaSanJuan();
+  if (!clima) return null;
+
+  return (
+    <p
+      aria-label={`Clima en San Juan a las ${clima.hora}: ${clima.condicion}, ${clima.temperatura} grados`}
+      className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-xl"
+    >
+      <Icono condicion={clima.condicion} clase="size-4 text-hunter" />
+      <span className="text-lg font-bold leading-none tabular-nums">{clima.temperatura}°</span>
+      <span className="flex flex-col items-start leading-tight">
+        <span>
+          {clima.condicion}
+          {clima.hora ? <span className="text-white/50"> · {clima.hora}</span> : null}
+        </span>
+        <span className="text-[10px] font-medium text-white/55">
+          San Juan · {clima.minima}° / {clima.maxima}°
+        </span>
+      </span>
+    </p>
   );
 }
 

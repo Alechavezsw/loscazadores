@@ -36,18 +36,23 @@ async function idDelCanal(valor: string): Promise<string | null> {
   const res = await fetch(pagina, { redirect: "follow", signal: AbortSignal.timeout(8_000), headers: CABECERAS });
   if (!res.ok || !res.body) return null;
 
-  // La etiqueta canonical está al principio del HTML y la página entera pesa más de 1 MB: se corta la descarga
-  // apenas aparece.
+  // El ID del canal está en la etiqueta canonical, pero YouTube la manda recién después de los 800 KB.
+  // Se corta la descarga apenas aparece, sin bajar el resto de la página.
   const lector = res.body.getReader();
   const decodificador = new TextDecoder();
   let html = "";
   let id: string | null = null;
+  const idEn = (texto: string) =>
+    texto.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})"/)?.[1] ??
+    texto.match(/property="og:url" content="https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})"/)?.[1] ??
+    texto.match(/feeds\/videos\.xml\?channel_id=(UC[\w-]{22})/)?.[1] ??
+    null;
   try {
-    while (html.length < 400_000) {
+    while (html.length < 1_300_000) {
       const { done, value } = await lector.read();
       if (done) break;
       html += decodificador.decode(value, { stream: true });
-      id = html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})"/)?.[1] ?? null;
+      id = idEn(html);
       if (id) break;
     }
   } finally {

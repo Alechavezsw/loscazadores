@@ -105,12 +105,11 @@ function Pildora({ contactoHref, nombreVideos, pathname }: { contactoHref: strin
           <Link
             href="/"
             aria-label="Los Cazadores de Noticias, ir al inicio"
-            className="flex items-center gap-2 rounded-full py-1 pl-2 pr-3 transition-colors duration-700 ease-fluid hover:bg-white/10"
+            className="flex items-center gap-2 rounded-full py-1 pl-2 pr-3 transition-colors duration-700 ease-fluid hover:bg-white/10 md:px-2"
           >
             <Mark className="size-6 text-white" />
-            {/* En el celular el botón de la marca es el único camino a la portada: dice «Inicio». En pantallas grandes la lista ya trae su «Inicio». */}
+            {/* En el celular el botón de la marca es el único camino a la portada: dice «Inicio». En pantallas grandes alcanza la lupa, porque la lista ya trae su «Inicio». */}
             <span className="text-sm font-semibold uppercase tracking-wide md:hidden">Inicio</span>
-            <span className="hidden text-sm font-semibold uppercase tracking-wide md:inline">Los Cazadores</span>
           </Link>
 
           <ul className="hidden items-center gap-1 md:flex">

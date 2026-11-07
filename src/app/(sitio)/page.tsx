@@ -98,7 +98,7 @@ export default async function Inicio() {
           consultaHref={consultaHref}
           className="pb-16 md:pb-24"
         />
-        <ProgramasInicio ajustes={ajustes} />
+        <ProgramasInicio ajustes={ajustes} ultimoVideo={ultimoVideo} />
       </Banda>
 
       <VideosInicio piezas={videos} nombre={ajustes.nombreVideos} />

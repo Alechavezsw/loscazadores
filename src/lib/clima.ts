@@ -10,10 +10,13 @@ export type Clima = {
   maxima: number;
   viento: number;
   condicion: string;
+  /** Hora local de la medición, «10:15». */
+  hora: string;
 };
 
 type Respuesta = {
   current?: {
+    time?: string;
     temperature_2m?: number;
     apparent_temperature?: number;
     weather_code?: number;
@@ -78,6 +81,7 @@ export async function getClimaSanJuan(): Promise<Clima | null> {
       maxima: Math.round(data.daily?.temperature_2m_max?.[0] ?? actual.temperature_2m),
       viento: Math.round(actual.wind_speed_10m),
       condicion: condicionDelCodigo(actual.weather_code),
+      hora: actual.time?.slice(11, 16) ?? "",
     };
   } catch {
     return null;
