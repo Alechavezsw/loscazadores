@@ -4,7 +4,10 @@ import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/cn";
 import { getAjustes, getNoticias } from "@/lib/queries";
 import { notaEnSeccion, rutaSeccion, SECCIONES, type Seccion } from "@/lib/types";
+import { ldListado, ldMigas } from "@/lib/seo";
+import { urlSitio } from "@/lib/sitio";
 import { limpiarUrl } from "@/lib/urls";
+import { JsonLd } from "./JsonLd";
 import { MediosAmigos } from "./MediosAmigos";
 import { NewsCard } from "./NewsCard";
 import { PageHeader } from "./PageHeader";
@@ -16,9 +19,19 @@ import { PageHeader } from "./PageHeader";
 export async function SeccionPagina({ seccion }: { seccion: Seccion }) {
   const [todas, ajustes] = await Promise.all([getNoticias(), getAjustes()]);
   const noticias = todas.filter((n) => notaEnSeccion(n, seccion));
+  const sitio = urlSitio();
 
   return (
     <>
+      <JsonLd
+        datos={ldListado(sitio, {
+          nombre: seccion.nombre,
+          descripcion: seccion.bajada,
+          ruta: rutaSeccion(seccion),
+          items: noticias.map((n) => ({ nombre: n.titulo, ruta: `/noticias/${n.slug}` })),
+        })}
+      />
+      <JsonLd datos={ldMigas(sitio, [{ nombre: seccion.nombre, ruta: rutaSeccion(seccion) }])} />
       <PageHeader etiqueta="Sección" titulo={seccion.nombre} bajada={seccion.bajada} />
       <div className="mx-auto w-full max-w-[1440px] px-4 py-12 md:px-6 md:py-16">
         <nav aria-label="Secciones" className="mb-8 flex flex-wrap items-center gap-2">

@@ -13,7 +13,7 @@ import { VideoCard } from "@/components/site/VideoCard";
 import { fechaCompleta, parrafos, resumen } from "@/lib/format";
 import { srcImagen, srcImagenAbsoluto, srcVideo, srcVideoAbsoluto, tarjetaVideo, tipoVideo } from "@/lib/imagen-url";
 import { getAjustes, getVideo, getVideos } from "@/lib/queries";
-import { metaPagina } from "@/lib/seo";
+import { ldEditor, ldMigas, metaPagina } from "@/lib/seo";
 import { urlSitio } from "@/lib/sitio";
 
 export async function generateMetadata({ params }: PageProps<"/sin-censura/[slug]">): Promise<Metadata> {
@@ -71,8 +71,15 @@ async function Video({ params }: { params: PageProps<"/sin-censura/[slug]">["par
           uploadDate: p.creada,
           ...(p.video ? { contentUrl: srcVideoAbsoluto(p.video, sitio) } : {}),
           url,
-          publisher: { "@type": "Organization", name: "Los Cazadores de Noticias" },
+          inLanguage: "es-AR",
+          publisher: ldEditor(sitio),
         }}
+      />
+      <JsonLd
+        datos={ldMigas(sitio, [
+          { nombre: ajustes.nombreVideos, ruta: "/sin-censura" },
+          { nombre: p.titulo, ruta: `/sin-censura/${p.slug}` },
+        ])}
       />
       <header className="relative isolate overflow-hidden bg-ink px-4 pb-12 pt-32 text-white md:px-6 md:pb-16 md:pt-40">
         <FondoNoche lado="der" />

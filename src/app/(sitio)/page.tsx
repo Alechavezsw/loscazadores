@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Info } from "@phosphor-icons/react/ssr";
 import { JsonLd } from "@/components/site/JsonLd";
-import { metaPagina } from "@/lib/seo";
+import { ldMedio, ldSitio, metaPagina } from "@/lib/seo";
 import { urlSitio } from "@/lib/sitio";
 import { BannerPublicidad } from "@/components/site/BannerPublicidad";
 import { CarruselProgramas } from "@/components/site/CarruselProgramas";
@@ -55,16 +55,8 @@ export default async function Inicio() {
 
   return (
     <>
-      <JsonLd
-        datos={{
-          "@context": "https://schema.org",
-          "@type": "NewsMediaOrganization",
-          name: "Los Cazadores de Noticias",
-          url: sitio,
-          description: ajustes.lema,
-          logo: `${sitio}/brand/og.png`,
-        }}
-      />
+      <JsonLd datos={ldMedio(sitio, ajustes)} />
+      <JsonLd datos={ldSitio(sitio)} />
       <Masthead lema={ajustes.lema} contactoHref={noticiaHref} />
       <LiveSection canalUrl={perfilYoutube(ajustes.youtube)} />
       <Ticker noticias={noticias} />

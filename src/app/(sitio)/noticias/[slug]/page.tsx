@@ -12,11 +12,11 @@ import { Incrustados } from "@/components/site/Incrustados";
 import { NewsCard } from "@/components/site/NewsCard";
 import { TextoNota } from "@/components/site/TextoNota";
 import { cuerpoSinTitulo, fechaCompleta, parrafos, resumen } from "@/lib/format";
-import { srcImagen, srcImagenAbsoluto, srcVideo } from "@/lib/imagen-url";
+import { srcImagen, srcImagenAbsoluto, srcVideo, srcVideoAbsoluto } from "@/lib/imagen-url";
 import { getNoticia, getNoticias } from "@/lib/queries";
-import { CANALES, type Noticia } from "@/lib/types";
+import { CANALES, notaEnSeccion, rutaSeccion, SECCIONES, type Noticia } from "@/lib/types";
 import { embedFacebook, embedInstagram, idVideoYoutube, normalizarEnlace } from "@/lib/urls";
-import { metaPagina } from "@/lib/seo";
+import { ldEditor, ldMigas, metaPagina } from "@/lib/seo";
 import { urlSitio } from "@/lib/sitio";
 
 export async function generateMetadata({ params }: PageProps<"/noticias/[slug]">): Promise<Metadata> {
@@ -131,28 +131,50 @@ async function Articulo({ params }: { params: PageProps<"/noticias/[slug]">["par
   const sitio = urlSitio();
   const url = `${sitio}/noticias/${n.slug}`;
 
+  const foto = n.imagen ? srcImagenAbsoluto(n.imagen, sitio) : `${sitio}/brand/og.png`;
+  const descripcion = resumen(n.cuerpo, 160) || n.titulo;
+  const seccion = SECCIONES.find((s) => notaEnSeccion(n, s));
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: n.titulo,
-    description: resumen(n.cuerpo, 160) || n.titulo,
+    // Google corta los titulares de más de 110 caracteres.
+    headline: resumen(n.titulo, 110),
+    description: descripcion,
     datePublished: n.creada,
     dateModified: n.actualizada,
     articleSection: n.categoria,
-    image: [n.imagen ? srcImagenAbsoluto(n.imagen, sitio) : `${sitio}/brand/og.png`],
-    mainEntityOfPage: url,
-    author: { "@type": "Organization", name: "Los Cazadores de Noticias", url: sitio },
-    publisher: {
-      "@type": "Organization",
-      name: "Los Cazadores de Noticias",
-      logo: { "@type": "ImageObject", url: `${sitio}/brand/og.png` },
-    },
+    inLanguage: "es-AR",
+    isAccessibleForFree: true,
+    image: [foto],
+    thumbnailUrl: foto,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    ...(n.zona ? { contentLocation: { "@type": "Place", name: `${n.zona}, San Juan, Argentina` } } : {}),
+    ...(n.video
+      ? {
+          video: {
+            "@type": "VideoObject",
+            name: n.titulo,
+            description: descripcion,
+            thumbnailUrl: foto,
+            uploadDate: n.creada,
+            contentUrl: srcVideoAbsoluto(n.video, sitio),
+          },
+        }
+      : {}),
+    author: ldEditor(sitio),
+    publisher: ldEditor(sitio),
   };
+  const migas = ldMigas(sitio, [
+    seccion ? { nombre: seccion.nombre, ruta: rutaSeccion(seccion) } : { nombre: "Noticias", ruta: "/noticias" },
+    { nombre: n.titulo, ruta: `/noticias/${n.slug}` },
+  ]);
 
   return (
     <>
       <article className="mx-auto w-full max-w-3xl px-4 pb-16 pt-32 md:pt-40">
         <JsonLd datos={jsonLd} />
+        <JsonLd datos={migas} />
 
         <Reveal immediate y={24}>
           <Link

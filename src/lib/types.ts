@@ -230,6 +230,8 @@ export type Ajustes = {
   tomateve: string;
   /** Enlace para escuchar Radio del Sur en vivo (el reproductor de la página usa la señal directa). */
   radioEnlace: string;
+  /** Código de verificación de Google Search Console (solo el código, sin la etiqueta). Ver codigoGoogle en lib/seo. */
+  googleVerificacion: string;
   /** Importar solo lo nuevo de Instagram y Facebook mientras haya una cuenta conectada. */
   sincronizar: boolean;
   /** Lo importado se publica directo (true) o queda como borrador para revisar (false). */

@@ -5,6 +5,7 @@ import { startTransition, useActionState, useRef, useState } from "react";
 import { guardarAjustes, probarEnVivo, type FormState, type PruebaLive } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import type { Ajustes, YoutubeModo } from "@/lib/types";
+import { CopiarCampo } from "./CopiarCampo";
 import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "./ui";
 
 const INICIAL: FormState = { ok: false };
@@ -36,7 +37,7 @@ function Seccion({ titulo, detalle, children }: { titulo: string; detalle?: stri
   );
 }
 
-export function SettingsForm({ ajustes }: { ajustes: Ajustes }) {
+export function SettingsForm({ ajustes, sitio }: { ajustes: Ajustes; sitio: string }) {
   const [estado, accion, pendiente] = useActionState(guardarAjustes, INICIAL);
   const [prueba, probar, probando] = useActionState<PruebaLive, FormData>(probarEnVivo, null);
   const [pruebaTomateve, probarTomateve, probandoTomateve] = useActionState<PruebaLive, FormData>(probarEnVivo, null);
@@ -201,6 +202,41 @@ export function SettingsForm({ ajustes }: { ajustes: Ajustes }) {
             className={input}
           />
         </Campo>
+      </Seccion>
+
+      <Seccion titulo="Google" detalle="Para que el sitio aparezca en el buscador y puedas ver cómo le va en Google Search Console.">
+        <Campo
+          id="googleVerificacion"
+          etiqueta="Verificación de Google Search Console"
+          error={errores.googleVerificacion}
+          ayuda="Pegá la etiqueta que te da Google en «Etiqueta HTML» (empieza con <meta name=&quot;google-site-verification&quot;) o solo el código. Guardá y después tocá «Verificar» en Google."
+        >
+          <input
+            id="googleVerificacion"
+            name="googleVerificacion"
+            defaultValue={ajustes.googleVerificacion}
+            placeholder='<meta name="google-site-verification" content="…" />'
+            spellCheck={false}
+            autoComplete="off"
+            aria-invalid={errores.googleVerificacion ? true : undefined}
+            className={cn(input, "font-code text-xs")}
+          />
+        </Campo>
+        <ol className="flex list-decimal flex-col gap-1 pl-5 text-sm text-ink/70">
+          <li>
+            Entrá a{" "}
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline underline-offset-2">
+              search.google.com/search-console
+            </a>{" "}
+            y agregá una propiedad del tipo «Prefijo de la URL» con la dirección del sitio.
+          </li>
+          <li>Elegí el método «Etiqueta HTML», copiá la etiqueta, pegala acá arriba y guardá.</li>
+          <li>Volvé a Google y tocá «Verificar».</li>
+          <li>En el menú «Sitemaps» de Google, agregá las dos direcciones de abajo.</li>
+        </ol>
+        <CopiarCampo id="googleSitio" etiqueta="Dirección del sitio (la propiedad)" valor={`${sitio}/`} />
+        <CopiarCampo id="googleSitemap" etiqueta="Mapa del sitio" valor={`${sitio}/sitemap.xml`} />
+        <CopiarCampo id="googleSitemapNoticias" etiqueta="Mapa de noticias (Google Noticias)" valor={`${sitio}/news-sitemap.xml`} />
       </Seccion>
 
       <div className="flex flex-wrap items-center gap-4">

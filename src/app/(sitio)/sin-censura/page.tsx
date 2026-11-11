@@ -6,7 +6,9 @@ import { PageHeader } from "@/components/site/PageHeader";
 import { VideoCard } from "@/components/site/VideoCard";
 import { VideoDestacado } from "@/components/site/VideoDestacado";
 import { getAjustes, getVideos } from "@/lib/queries";
-import { metaPagina } from "@/lib/seo";
+import { JsonLd } from "@/components/site/JsonLd";
+import { ldListado, ldMigas, metaPagina } from "@/lib/seo";
+import { urlSitio } from "@/lib/sitio";
 import { linkWhatsapp } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,9 +26,19 @@ export default async function Videos() {
   const principal = piezas.find((p) => p.destacada) ?? piezas[0];
   const resto = piezas.filter((p) => p.id !== principal?.id);
   const contactoHref = linkWhatsapp(ajustes.whatsappContacto, "Hola, quiero mandarles un video.");
+  const sitio = urlSitio();
 
   return (
     <>
+      <JsonLd
+        datos={ldListado(sitio, {
+          nombre: ajustes.nombreVideos,
+          descripcion: `${ajustes.nombreVideos}: los videos de Los Cazadores de Noticias, tal cual llegan, con la voz de los vecinos.`,
+          ruta: "/sin-censura",
+          items: piezas.map((p) => ({ nombre: p.titulo, ruta: `/sin-censura/${p.slug}` })),
+        })}
+      />
+      <JsonLd datos={ldMigas(sitio, [{ nombre: ajustes.nombreVideos, ruta: "/sin-censura" }])} />
       <PageHeader
         etiqueta="Videos"
         titulo={ajustes.nombreVideos}

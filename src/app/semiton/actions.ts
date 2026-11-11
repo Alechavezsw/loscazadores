@@ -26,6 +26,7 @@ import {
   type YoutubeModo,
 } from "@/lib/types";
 import { idVideoYoutube, limpiarUrl, soloDigitos } from "@/lib/urls";
+import { codigoGoogle } from "@/lib/seo";
 
 export type FormState = {
   ok: boolean;
@@ -546,6 +547,7 @@ type AjustesSitio = Pick<
   | "historiaTexto"
   | "tomateve"
   | "radioEnlace"
+  | "googleVerificacion"
 >;
 
 function leerAjustes(fd: FormData) {
@@ -565,6 +567,8 @@ function leerAjustes(fd: FormData) {
     historiaTexto: texto(fd, "historiaTexto"),
     tomateve: texto(fd, "tomateve"),
     radioEnlace: texto(fd, "radioEnlace"),
+    // Se guarda solo el código, aunque se pegue la etiqueta entera que da Google.
+    googleVerificacion: codigoGoogle(texto(fd, "googleVerificacion")),
   } satisfies AjustesSitio;
 }
 
@@ -598,6 +602,9 @@ export async function guardarAjustes(_prev: FormState, fd: FormData): Promise<Fo
     errores.tomateve = "Escribí el @usuario del canal de Tomateteve Streaming, su ID que empieza con UC o el enlace del canal.";
   }
   if (a.radioEnlace && !limpiarUrl(a.radioEnlace)) errores.radioEnlace = "Pegá el enlace completo para escuchar la radio.";
+  if (texto(fd, "googleVerificacion") && !a.googleVerificacion) {
+    errores.googleVerificacion = "Pegá la etiqueta completa que te da Google, o solo el código que trae adentro.";
+  }
 
   if (Object.keys(errores).length > 0) return { ok: false, mensaje: "Revisá los campos marcados.", errores };
 

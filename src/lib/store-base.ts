@@ -26,6 +26,7 @@ export const AJUSTES_BASE: Ajustes = {
   // El canal oficial de TomateTV. Si el campo se deja vacío en Ajustes se vuelve a usar este (ver `completar`).
   tomateve: "https://www.youtube.com/@somostomateve",
   radioEnlace: "",
+  googleVerificacion: "",
   sincronizar: true,
   sincronizarPublicar: true,
   sincronizarCategoria: "Comunidad",

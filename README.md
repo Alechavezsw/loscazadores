@@ -207,6 +207,40 @@ clics en los botones importantes (enviar noticia, redes, compartir, radio) y las
 - `STATS_SALT` (opcional) es la clave secreta con la que se arma el código diario; si no está, se usa `SESSION_SECRET`.
   `ESTADISTICAS=off` apaga el conteo sin tocar el código.
 
+## Google (SEO y Search Console)
+
+El sitio ya sale preparado para los buscadores; no hay que tocar código para darlo de alta en Google.
+
+**Verificar el sitio en Google Search Console** (search.google.com/search-console), de cualquiera de estas dos formas:
+
+- **Propiedad de dominio (recomendada, cubre con y sin `www`).** Google da un texto que empieza con
+  `google-site-verification=`. Se carga como registro **TXT** en el DNS del dominio. El DNS está en Vercel:
+  Vercel → Domains → el dominio → DNS Records → tipo TXT, nombre vacío (o `@`), valor el texto entero. También por
+  consola: `vercel dns add loscazadoresdenoticias.com.ar @ TXT "google-site-verification=…"`.
+- **Propiedad «Prefijo de la URL».** Se elige el método «Etiqueta HTML», se copia la etiqueta y se pega en el panel,
+  en **Ajustes → Google**. Al guardar, la etiqueta aparece en todas las páginas. (Si el campo del panel está vacío
+  se usa la variable `GOOGLE_SITE_VERIFICATION`.)
+
+**Después de verificar**, en el menú «Sitemaps» de Search Console se cargan estas dos direcciones (el panel las
+muestra listas para copiar en Ajustes → Google):
+
+- `/sitemap.xml`: todas las páginas, con la foto de cada nota y los datos de cada video subido.
+- `/news-sitemap.xml`: las notas de las últimas 48 horas, en el formato de Google Noticias. Si en dos días no se
+  publicó nada sale vacío, y está bien.
+
+Lo demás que ya hace el sitio solo:
+
+- Cada página tiene su título, descripción, dirección canónica y la tarjeta para compartir (`lib/seo.ts`,
+  `metaPagina`). Las páginas públicas le permiten a Google mostrar la foto grande (necesario para Discover).
+- Datos estructurados (`lib/seo.ts`): el medio y el sitio en la portada, `NewsArticle` en cada nota,
+  `VideoObject` en cada video y el camino de navegación en todas. Se prueban pegando una dirección en
+  search.google.com/test/rich-results.
+- `/feed.xml`: las últimas noticias en RSS, para lectores de noticias y para el Centro de editores de Google Noticias.
+- `/robots.txt` deja pasar a los buscadores y solo cierra `/api/`. El panel no figura ahí a propósito (ese archivo
+  es público); sus páginas llevan `noindex`.
+- `NEXT_PUBLIC_SITE_URL` tiene que ser la dirección definitiva del sitio (con `https://` y `www`): de ahí salen los
+  enlaces canónicos y los de los mapas.
+
 ## Publicar en Vercel
 
 1. **Repositorio.** Subí el proyecto a GitHub. La app está en la carpeta `web`: si el repositorio tiene

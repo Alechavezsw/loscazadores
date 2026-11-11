@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Figtree } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
+import { getAjustes } from "@/lib/queries";
+import { codigoGoogle, NOMBRE_SITIO, ROBOTS_ABIERTO, RUTA_RSS } from "@/lib/seo";
 import { urlSitio } from "@/lib/sitio";
 
 /**
@@ -17,30 +19,49 @@ const figtree = Figtree({
 
 const sitio = urlSitio();
 
-export const metadata: Metadata = {
-  metadataBase: new URL(sitio),
-  title: {
-    default: "Los Cazadores de Noticias | Las noticias de tu barrio al instante",
-    template: "%s | Los Cazadores de Noticias",
-  },
-  description:
-    "Diario digital con las noticias de tu barrio al instante. Mirá lo último de nuestro canal de WhatsApp, Instagram y Facebook, y las transmisiones en vivo por YouTube.",
-  applicationName: "Los Cazadores de Noticias",
-  openGraph: {
-    type: "website",
-    locale: "es_AR",
-    siteName: "Los Cazadores de Noticias",
-    title: "Los Cazadores de Noticias",
-    description: "Las noticias de tu barrio al instante.",
-    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: "Los Cazadores de Noticias" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Los Cazadores de Noticias",
-    description: "Las noticias de tu barrio al instante.",
-    images: ["/brand/og.png"],
-  },
-};
+/**
+ * Lo que comparten todas las páginas. Cada página pública suma lo suyo con metaPagina (lib/seo).
+ * La verificación de Google Search Console sale del panel (Ajustes → Google) o, si ahí está vacía, de la variable
+ * GOOGLE_SITE_VERIFICATION. Va en todas las páginas porque Google la busca en la portada.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const { googleVerificacion } = await getAjustes();
+  const google = codigoGoogle(googleVerificacion) || codigoGoogle(process.env.GOOGLE_SITE_VERIFICATION);
+
+  return {
+    metadataBase: new URL(sitio),
+    title: {
+      default: `${NOMBRE_SITIO} | Las noticias de tu barrio al instante`,
+      template: `%s | ${NOMBRE_SITIO}`,
+    },
+    description:
+      "Diario digital de San Juan con las noticias de tu barrio al instante. Mirá lo último de nuestro canal de WhatsApp, Instagram y Facebook, y las transmisiones en vivo por YouTube.",
+    applicationName: NOMBRE_SITIO,
+    authors: [{ name: NOMBRE_SITIO, url: sitio }],
+    creator: NOMBRE_SITIO,
+    publisher: NOMBRE_SITIO,
+    category: "news",
+    // Los números de las notas no son teléfonos para marcar: sin esto el iPhone los vuelve enlaces.
+    formatDetection: { telephone: false, address: false, email: false },
+    robots: ROBOTS_ABIERTO,
+    alternates: { types: { "application/rss+xml": [{ url: RUTA_RSS, title: NOMBRE_SITIO }] } },
+    verification: google ? { google } : undefined,
+    openGraph: {
+      type: "website",
+      locale: "es_AR",
+      siteName: NOMBRE_SITIO,
+      title: NOMBRE_SITIO,
+      description: "Las noticias de tu barrio al instante.",
+      images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: NOMBRE_SITIO }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: NOMBRE_SITIO,
+      description: "Las noticias de tu barrio al instante.",
+      images: ["/brand/og.png"],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#000000",
