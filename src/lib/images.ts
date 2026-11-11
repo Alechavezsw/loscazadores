@@ -12,6 +12,11 @@ const MAX_BYTES = 12 * 1024 * 1024;
 const TIPOS = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
 export const NOMBRE_VALIDO = /^[a-f0-9]{16}\.webp$/;
 
+const URL_BLOB_VALIDA = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/uploads\/[a-f0-9]{16}\.webp$/i;
+
+/** Lo que se anota en una noticia tiene que ser una foto nuestra: el archivo guardado o su dirección en nuestro Blob. */
+export const imagenValida = (v: string) => NOMBRE_VALIDO.test(v) || URL_BLOB_VALIDA.test(v);
+
 export class ErrorImagen extends Error {}
 
 /** Blob queda solo como respaldo si no hay base. Con Postgres las fotos van a lc_imagenes. */

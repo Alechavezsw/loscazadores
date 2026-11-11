@@ -6,8 +6,11 @@ import { startTransition, useActionState, useState } from "react";
 import { guardarNoticia, type FormState } from "@/app/semiton/actions";
 import { CANAL_UI } from "@/components/site/canales";
 import { cn } from "@/lib/cn";
+import { contenidoDesdeTexto, type Contenido } from "@/lib/contenido";
+import { cuerpoSinTitulo } from "@/lib/format";
 import { CANALES, CATEGORIAS, ESPACIO_INFO, ESPACIOS, type Canal, type Noticia } from "@/lib/types";
 import type { ModoVideo } from "@/lib/video-limites";
+import { EditorNota } from "./EditorNota";
 import { ImagenCampo } from "./ImagenCampo";
 import { IncrustarCampo } from "./IncrustarCampo";
 import { VideoCampo } from "./VideoCampo";
@@ -21,6 +24,12 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
   const errores = estado.errores ?? {};
   const hidratado = useHidratado();
   const [subiendoVideo, setSubiendoVideo] = useState(false);
+  const [subiendoTexto, setSubiendoTexto] = useState(false);
+  const subiendo = subiendoVideo || subiendoTexto;
+  // Las notas viejas o importadas no pasaron por el editor: se arranca con su texto, un párrafo por bloque.
+  const [inicial] = useState<Contenido>(
+    () => noticia?.contenido ?? contenidoDesdeTexto(noticia ? cuerpoSinTitulo(noticia.titulo, noticia.cuerpo) : ""),
+  );
 
   function alEnviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,20 +65,7 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
           />
         </Campo>
 
-        <Campo id="cuerpo" etiqueta="Texto de la noticia" error={errores.cuerpo} ayuda="Separá los párrafos con una línea en blanco.">
-          <textarea
-            id="cuerpo"
-            name="cuerpo"
-            required
-            minLength={10}
-            maxLength={8000}
-            rows={10}
-            defaultValue={noticia?.cuerpo}
-            aria-invalid={errores.cuerpo ? true : undefined}
-            aria-describedby={errores.cuerpo ? "cuerpo-error" : "cuerpo-ayuda"}
-            className={cn(input, "resize-y leading-relaxed")}
-          />
-        </Campo>
+        <EditorNota inicial={inicial} modoVideo={modoVideo} error={errores.cuerpo} alCambiarOcupado={setSubiendoTexto} />
 
         <div className="flex flex-col gap-1">
           <span className="text-sm font-semibold">Imagen de portada</span>
@@ -202,8 +198,8 @@ export function NewsForm({ noticia, modoVideo }: { noticia?: Noticia; modoVideo:
         {estado.mensaje ? <Mensaje ok={estado.ok}>{estado.mensaje}</Mensaje> : null}
 
         <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" disabled={pendiente || !hidratado || subiendoVideo} className={botonPrimario}>
-            {subiendoVideo ? "Esperá, se está subiendo el video…" : pendiente ? "Guardando…" : noticia ? "Guardar cambios" : "Publicar noticia"}
+          <button type="submit" disabled={pendiente || !hidratado || subiendo} className={botonPrimario}>
+            {subiendo ? "Esperá, se está subiendo un archivo…" : pendiente ? "Guardando…" : noticia ? "Guardar cambios" : "Publicar noticia"}
           </button>
           <Link href="/semiton/noticias" className={botonSecundario}>
             Cancelar

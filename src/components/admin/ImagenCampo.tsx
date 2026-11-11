@@ -4,41 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ImageSquare, WarningCircle } from "@phosphor-icons/react/ssr";
 import { cn } from "@/lib/cn";
 import { srcImagen } from "@/lib/imagen-url";
-
-/** Lo máximo que se acepta elegir, antes de achicar. */
-const MAX_ORIGINAL_MB = 25;
-/**
- * Lo máximo que puede viajar al servidor. Vercel corta los pedidos de más de 4,5 MB, así que las fotos
- * se achican en el navegador (una de celular de 8 MB queda en unos 300 KB) antes de enviarlas.
- */
-const MAX_ENVIO_MB = 4;
-const LADO_MAXIMO = 1600;
-const ACHICAR_DESDE = 1_200_000;
-
-/** Achica y pasa a WebP en el navegador. Si algo falla, devuelve el archivo original sin tocar. */
-async function reducir(archivo: File): Promise<File> {
-  // Los GIF animados no se tocan: al pasarlos por un lienzo perderían el movimiento.
-  if (!archivo.type.startsWith("image/") || archivo.type === "image/gif") return archivo;
-  try {
-    const bmp = await createImageBitmap(archivo, { imageOrientation: "from-image" });
-    const escala = Math.min(1, LADO_MAXIMO / Math.max(bmp.width, bmp.height));
-    if (escala === 1 && archivo.size <= ACHICAR_DESDE) {
-      bmp.close();
-      return archivo;
-    }
-    const lienzo = document.createElement("canvas");
-    lienzo.width = Math.round(bmp.width * escala);
-    lienzo.height = Math.round(bmp.height * escala);
-    lienzo.getContext("2d")?.drawImage(bmp, 0, 0, lienzo.width, lienzo.height);
-    bmp.close();
-    const blob = await new Promise<Blob | null>((resolver) => lienzo.toBlob(resolver, "image/webp", 0.85));
-    // Si el navegador no sabe codificar WebP devuelve PNG, que puede pesar más: se queda el original.
-    if (!blob || blob.size >= archivo.size) return archivo;
-    return new File([blob], `${archivo.name.replace(/\.[^.]+$/, "")}.webp`, { type: blob.type });
-  } catch {
-    return archivo;
-  }
-}
+import { MAX_ENVIO_MB, MAX_ORIGINAL_MB, reducirImagen } from "@/lib/subir-medios";
 
 type Props = {
   name?: string;
@@ -47,12 +13,14 @@ type Props = {
   error?: string;
   ayuda?: string;
   aspecto?: string;
+  /** «contain» muestra la foto entera; «cover» la recorta para llenar el recuadro. */
+  ajuste?: "cover" | "contain";
   /** Muestra la casilla para quitar la imagen actual. Se apaga donde la imagen es obligatoria. */
   permitirQuitar?: boolean;
 };
 
 /** Selector de imagen con vista previa. Si el formulario se reinicia, la vista previa también. */
-export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "aspect-video", permitirQuitar = true }: Props) {
+export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "aspect-video", ajuste = "cover", permitirQuitar = true }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quitar, setQuitar] = useState(false);
@@ -93,7 +61,7 @@ export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "
     }
 
     setPreparando(true);
-    const f = await reducir(original);
+    const f = await reducirImagen(original);
     setPreparando(false);
 
     if (f.size > MAX_ENVIO_MB * 1024 * 1024) {
@@ -138,7 +106,8 @@ export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "
         <label
           htmlFor={name}
           className={cn(
-            "flex cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-dashed bg-white text-center transition-colors duration-700 ease-fluid peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-hunter hover:border-ink",
+            "flex cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-dashed text-center transition-colors duration-700 ease-fluid peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-hunter hover:border-ink",
+            ajuste === "contain" ? "bg-ink-1" : "bg-white",
             mensaje ? "border-hunter" : "border-line",
             aspecto,
           )}
@@ -146,7 +115,7 @@ export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "
           {mostrada ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={mostrada} alt="Vista previa de la imagen elegida" className="size-full object-cover" />
+              <img src={mostrada} alt="Vista previa de la imagen elegida" className={cn("size-full", ajuste === "contain" ? "object-contain" : "object-cover")} />
               <span className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-ink/80 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
                 <ImageSquare weight="fill" className="size-3.5" aria-hidden />
                 {preparando ? "Preparando…" : "Cambiar la foto"}

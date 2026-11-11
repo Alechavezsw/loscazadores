@@ -21,10 +21,10 @@ export type Marca = {
   };
 };
 
-const EMISION_TDA = "Tomateve Streaming y la Televisión Digital Abierta, canal 35.2, señal La Retro";
+const EMISION_TDA = "Tomateteve Streaming y la Televisión Digital Abierta, canal 35.2, señal La Retro";
 
 export const MARCAS = {
-  tomateve: { nombre: "Tomateve", logo: "/brand/tomate-tv.png", fondo: "oscuro" },
+  tomateve: { nombre: "Tomateteve Streaming", logo: "/brand/tomate-tv.png", fondo: "oscuro" },
   rockola: {
     nombre: "La Rockola de Beethoven",
     logo: "/brand/rockola-beethoven.png",
@@ -37,7 +37,7 @@ export const MARCAS = {
   madres: {
     nombre: "Madres en Corto",
     logo: "/brand/madres-en-corto.png",
-    detalle: { conduce: "Conduce", conduccion: "Marianella Zeballos", emision: "Tomateve Streaming" },
+    detalle: { conduce: "Conduce", conduccion: "Marianella Zeballos", emision: "Tomateteve Streaming" },
   },
   cazadores: { nombre: "Los Cazadores de Noticias", logo: null, sitio: true, detalle: { emision: EMISION_TDA } },
   radio: { nombre: "Radio del Sur", logo: null },

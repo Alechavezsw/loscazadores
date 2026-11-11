@@ -83,7 +83,7 @@ export default async function Inicio() {
           consultaHref={consultaHref}
           className="pt-8 md:pt-10"
         />
-        <ChannelRail noticias={noticias} anuncios={anuncios} ajustes={ajustes} ultimoVideo={ultimoVideo} />
+        <ChannelRail noticias={noticias} ajustes={ajustes} ultimoVideo={ultimoVideo} />
         <Promos anuncios={anuncios} consultaHref={consultaHref} />
       </Banda>
 
@@ -92,7 +92,12 @@ export default async function Inicio() {
       </Banda>
 
       <Banda tono="claro" lado="izq" lupa medio>
-        <EspaciosInicio noticias={noticias} radioEnlace={limpiarUrl(ajustes.radioEnlace)} />
+        <EspaciosInicio
+          noticias={noticias}
+          radioEnlace={limpiarUrl(ajustes.radioEnlace)}
+          anuncio={anuncios.find((a) => a.slot === "lateral-der") ?? null}
+          consultaHref={consultaHref}
+        />
         <BannerPublicidad
           anuncio={anuncios.find((a) => a.slot === "banner-2" && a.imagen) ?? null}
           consultaHref={consultaHref}

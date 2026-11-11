@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
+    "@tiptap/pm": "^3.33.1",
+    "@tiptap/react": "^3.33.1",
+    "@tiptap/starter-kit": "^3.33.1",
     "@vercel/blob": "^2.8.2",
     "fast-xml-parser": "^5.11.2",
     "motion": "^14.6.0",

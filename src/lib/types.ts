@@ -1,3 +1,5 @@
+import type { Contenido } from "./contenido";
+
 export const CANALES = ["whatsapp", "instagram", "facebook", "youtube"] as const;
 export type Canal = (typeof CANALES)[number];
 
@@ -109,7 +111,10 @@ export type Noticia = {
   id: string;
   slug: string;
   titulo: string;
+  /** El texto plano de la nota. Si se escribió con el editor, sale de `contenido`. */
   cuerpo: string;
+  /** Lo escrito con el editor: texto con formato, fotos, videos e incrustados entre los párrafos. Ver lib/contenido. */
+  contenido?: Contenido;
   categoria: string;
   zona: string;
   /** Dirección de la foto en Vercel Blob, o nombre del archivo en data/uploads (servido desde /media). Ver srcImagen. */
@@ -172,10 +177,24 @@ export type SlotAnuncio = (typeof SLOTS)[number];
 export const SLOT_NOMBRE: Record<SlotAnuncio, string> = {
   banner: "Banner horizontal 1 (arriba, antes de las redes)",
   "banner-2": "Banner horizontal 2 (debajo del bloque Comunidad)",
-  "lateral-izq": "Lateral izquierdo",
-  "lateral-der": "Lateral derecho",
+  "lateral-izq": "Lateral izquierdo (ya no se muestra)",
+  "lateral-der": "Banner horizontal (arriba de Secciones)",
   promo: "Promociones",
 };
+
+/** Cómo se previsualiza la foto al editarla, según el lugar donde se publica. */
+export function marcoAnuncio(slot: SlotAnuncio): { aspecto: string; ajuste: "cover" | "contain"; ayuda: string } {
+  if (slot === "promo") {
+    return { aspecto: "aspect-[4/3]", ajuste: "cover", ayuda: "Horizontal 4:3, unos 800 por 600 px." };
+  }
+  if (slot === "lateral-der") {
+    return { aspecto: "aspect-[5/1]", ajuste: "contain", ayuda: "Horizontal, unos 1400 por 280 px. Se ve entera, arriba de Secciones." };
+  }
+  if (slot === "lateral-izq") {
+    return { aspecto: "aspect-[4/3]", ajuste: "contain", ayuda: "Este lugar ya no aparece en la portada." };
+  }
+  return { aspecto: "aspect-[97/25]", ajuste: "contain", ayuda: "Horizontal, 970 por 250 px. Se ve entera, sin recortarla." };
+}
 
 export type Anuncio = {
   id: string;

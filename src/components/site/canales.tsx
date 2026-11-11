@@ -10,7 +10,10 @@ export const CANAL_UI: Record<
     Icono: typeof WhatsappLogo;
     /** Logo propio de la columna; si no hay, se usa el ícono de la red. */
     logo?: string | null;
+    /** Color de la cabecera. Instagram lleva degradado propio y no usa la trama de puntos. */
     barra: string;
+    /** Color del ícono cuando va sobre el círculo blanco. */
+    tinta: string;
     boton: string;
     cta: string;
   }
@@ -19,34 +22,38 @@ export const CANAL_UI: Record<
     nombre: "Canal de WhatsApp",
     corto: "WhatsApp",
     Icono: WhatsappLogo,
-    barra: "bg-hunter",
-    boton: "bg-ink hover:bg-hunter",
+    barra: "trama bg-wa",
+    tinta: "text-wa",
+    boton: "bg-ink hover:bg-wa",
     cta: "Ver en WhatsApp",
   },
   instagram: {
     nombre: "Instagram",
     corto: "Instagram",
     Icono: InstagramLogo,
-    barra: "bg-hunter",
-    boton: "bg-ink hover:bg-hunter",
+    barra: "bg-[linear-gradient(115deg,#f9ce34_0%,#ee2a7b_42%,#8134af_78%,#515bd4_100%)]",
+    tinta: "text-ig",
+    boton: "bg-ink hover:bg-ig",
     cta: "Ver en Instagram",
   },
   facebook: {
     nombre: "Facebook",
     corto: "Facebook",
     Icono: FacebookLogo,
-    barra: "bg-hunter",
-    boton: "bg-ink hover:bg-hunter",
+    barra: "trama bg-fb",
+    tinta: "text-fb",
+    boton: "bg-ink hover:bg-fb",
     cta: "Ver en Facebook",
   },
-  // El canal de YouTube es el de TomateTV, por donde salen los programas.
+  // El canal de YouTube es el de Tomateteve, por donde salen los programas.
   youtube: {
     nombre: MARCAS.tomateve.nombre,
     corto: "YouTube",
     Icono: YoutubeLogo,
     logo: MARCAS.tomateve.logo,
-    barra: "bg-hunter",
+    barra: "trama bg-hunter",
+    tinta: "text-hunter",
     boton: "bg-ink hover:bg-hunter",
-    cta: "Ver Tomateve",
+    cta: "Ver Tomateteve Streaming",
   },
 };

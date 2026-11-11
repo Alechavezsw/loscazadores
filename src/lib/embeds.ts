@@ -1,3 +1,4 @@
+import type { Contenido } from "./contenido";
 import { embedFacebook, embedInstagram, idVideoYoutube } from "./urls";
 
 /**
@@ -123,7 +124,8 @@ export function leerIncrustados(texto: string): LecturaIncrustados {
   return { validos, errores };
 }
 
-/** La nota se marca como "video" si trae un archivo subido o un incrustado que lo es. */
-export function tieneVideo(n: { video?: string; incrustados?: string[] }) {
-  return Boolean(n.video) || (n.incrustados ?? []).some((u) => incrustar(u)?.esVideo);
+/** La nota se marca como "video" si trae un archivo subido o un incrustado que lo es, arriba o dentro del texto. */
+export function tieneVideo(n: { video?: string; incrustados?: string[]; contenido?: Contenido }) {
+  if (n.video || (n.incrustados ?? []).some((u) => incrustar(u)?.esVideo)) return true;
+  return (n.contenido?.content ?? []).some((b) => b.type === "video" || (b.type === "incrustado" && incrustar(b.attrs.url)?.esVideo));
 }

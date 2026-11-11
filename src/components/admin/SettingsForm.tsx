@@ -165,8 +165,8 @@ export function SettingsForm({ ajustes }: { ajustes: Ajustes }) {
         </div>
       </Seccion>
 
-      <Seccion titulo="Tomateve en vivo" detalle="Los lunes: Madres en Corto de 20:00 a 22:00 y La Rockola de Beethoven de 22:00 a 00:00. Cuando el canal transmite, el video aparece solo en la portada con la insignia EN VIVO.">
-        <Campo id="tomateve" etiqueta="Canal de YouTube de Tomateve" error={errores.tomateve} ayuda="El @usuario del canal, su ID que empieza con UC o el enlace. También es el enlace del botón de YouTube en «Lo último en nuestras redes» y en el pie. Si lo dejás vacío se usa el canal oficial, @somostomateve.">
+      <Seccion titulo="Tomateteve Streaming en vivo" detalle="Los lunes: Madres en Corto de 20:00 a 22:00 y La Rockola de Beethoven de 22:00 a 00:00. Cuando el canal transmite, el video aparece solo en la portada con la insignia EN VIVO.">
+        <Campo id="tomateve" etiqueta="Canal de YouTube de Tomateteve Streaming" error={errores.tomateve} ayuda="El @usuario del canal, su ID que empieza con UC o el enlace. También es el enlace del botón de YouTube en «Lo último en nuestras redes» y en el pie. Si lo dejás vacío se usa el canal oficial, @somostomateve.">
           <input id="tomateve" name="tomateve" defaultValue={ajustes.tomateve} placeholder="@somostomateve" aria-invalid={errores.tomateve ? true : undefined} className={input} />
         </Campo>
         <div className="flex flex-col items-start gap-3">

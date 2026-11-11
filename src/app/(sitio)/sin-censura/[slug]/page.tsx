@@ -11,7 +11,7 @@ import { FondoNoche } from "@/components/site/Fondo";
 import { Incrustados } from "@/components/site/Incrustados";
 import { VideoCard } from "@/components/site/VideoCard";
 import { fechaCompleta, parrafos, resumen } from "@/lib/format";
-import { srcImagen, srcImagenAbsoluto, srcVideo } from "@/lib/imagen-url";
+import { srcImagen, srcImagenAbsoluto, srcVideo, srcVideoAbsoluto, tarjetaVideo, tipoVideo } from "@/lib/imagen-url";
 import { getAjustes, getVideo, getVideos } from "@/lib/queries";
 import { metaPagina } from "@/lib/seo";
 import { urlSitio } from "@/lib/sitio";
@@ -27,6 +27,9 @@ export async function generateMetadata({ params }: PageProps<"/sin-censura/[slug
     // /videos/<video> sigue andando como alias, pero la dirección propia es /sin-censura/<video>.
     ruta: `/sin-censura/${p.slug}`,
     imagen: p.imagen,
+    // Sin carátula, la vista previa es una tarjeta armada con el título del video, no la genérica de la marca.
+    tarjeta: tarjetaVideo(p),
+    video: p.video ? { url: srcVideoAbsoluto(p.video, urlSitio()), tipo: tipoVideo(p.video) } : null,
     tipo: "video.other",
     publicado: p.creada,
   });
@@ -64,8 +67,9 @@ async function Video({ params }: { params: PageProps<"/sin-censura/[slug]">["par
           "@type": "VideoObject",
           name: p.titulo,
           description: resumen(p.cuerpo || p.titulo, 160) || p.titulo,
-          thumbnailUrl: p.imagen ? srcImagenAbsoluto(p.imagen, sitio) : `${sitio}/brand/og.png`,
+          thumbnailUrl: p.imagen ? srcImagenAbsoluto(p.imagen, sitio) : `${sitio}${tarjetaVideo(p)}`,
           uploadDate: p.creada,
+          ...(p.video ? { contentUrl: srcVideoAbsoluto(p.video, sitio) } : {}),
           url,
           publisher: { "@type": "Organization", name: "Los Cazadores de Noticias" },
         }}

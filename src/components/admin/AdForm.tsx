@@ -2,9 +2,9 @@
 
 import { useHidratado } from "@/lib/use-hidratado";
 import Link from "next/link";
-import { startTransition, useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { guardarAnuncio, type FormState } from "@/app/semiton/actions";
-import { SLOT_NOMBRE, SLOTS, type Anuncio } from "@/lib/types";
+import { marcoAnuncio, SLOT_NOMBRE, SLOTS, type Anuncio, type SlotAnuncio } from "@/lib/types";
 import { ImagenCampo } from "./ImagenCampo";
 import { botonPrimario, botonSecundario, Campo, input, Mensaje, tarjeta } from "./ui";
 import { cn } from "@/lib/cn";
@@ -18,6 +18,8 @@ export function AdForm({ anuncio }: { anuncio?: Anuncio }) {
   const hidratado = useHidratado();
   const errores = estado.errores ?? {};
   const editando = Boolean(anuncio);
+  const [slot, setSlot] = useState<SlotAnuncio>(anuncio?.slot ?? "promo");
+  const marco = marcoAnuncio(slot);
 
   function alEnviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,7 +38,7 @@ export function AdForm({ anuncio }: { anuncio?: Anuncio }) {
 
       <div className="flex flex-col gap-4">
         <Campo id="slot" etiqueta="Dónde se muestra" error={errores.slot}>
-          <select id="slot" name="slot" defaultValue={anuncio?.slot ?? "promo"} className={input}>
+          <select id="slot" name="slot" value={slot} onChange={(e) => setSlot(e.target.value as SlotAnuncio)} className={input}>
             {SLOTS.map((s) => (
               <option key={s} value={s}>
                 {SLOT_NOMBRE[s]}
@@ -71,12 +73,9 @@ export function AdForm({ anuncio }: { anuncio?: Anuncio }) {
             actual={anuncio?.imagen}
             permitirQuitar={false}
             error={errores.imagen}
-            aspecto="aspect-[4/3]"
-            ayuda={
-              editando
-                ? "Tocá la foto para cambiarla por otra. Si no elegís ninguna, se queda la actual."
-                : "Banners horizontales: 970 por 250 px. Lateral: vertical, unos 224 por 800 px. Promociones: horizontal 4:3, unos 800 por 600 px."
-            }
+            aspecto={marco.aspecto}
+            ajuste={marco.ajuste}
+            ayuda={editando ? `Tocá la foto para cambiarla. Si no elegís otra, se queda la actual. ${marco.ayuda}` : marco.ayuda}
           />
         </div>
         {estado.mensaje ? <Mensaje ok={estado.ok}>{estado.mensaje}</Mensaje> : null}

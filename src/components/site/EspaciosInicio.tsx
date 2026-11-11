@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowRight, CalendarStar, EnvelopeSimple, EyeSlash, HandHeart, Handshake } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/cn";
-import { notaEnSeccion, rutaSeccion, seccionPorSlug, type Noticia } from "@/lib/types";
+import { notaEnSeccion, rutaSeccion, seccionPorSlug, type Anuncio, type Noticia } from "@/lib/types";
+import { AdRail } from "./AdRail";
 import { SectionTitle } from "./Brand";
 import { MediosAmigos } from "./MediosAmigos";
 import { NewsCard } from "./NewsCard";
@@ -118,10 +119,22 @@ function EspacioCard({
  * una muestra sus notas más recientes (las de su categoría); la de medios amigos muestra logos con enlaces.
  * `radioEnlace` es el enlace de la radio de Ajustes.
  */
-export function EspaciosInicio({ noticias, radioEnlace }: { noticias: Noticia[]; radioEnlace: string }) {
+export function EspaciosInicio({
+  noticias,
+  radioEnlace,
+  anuncio,
+  consultaHref,
+}: {
+  noticias: Noticia[];
+  radioEnlace: string;
+  /** El anuncio que iba en el lateral derecho: ahora es una franja horizontal arriba del título. */
+  anuncio: Anuncio | null;
+  consultaHref: string;
+}) {
   return (
     <section aria-labelledby="espacios-titulo" className="px-4 py-16 md:px-6 md:py-24">
       <div className="mx-auto w-full max-w-[1440px]">
+      <AdRail anuncio={anuncio} consultaHref={consultaHref} className="mb-10" />
       <Reveal>
         <SectionTitle id="espacios-titulo" eyebrow="Secciones">Comunidad</SectionTitle>
       </Reveal>

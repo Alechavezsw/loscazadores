@@ -5,105 +5,14 @@ import { VideoCamera, WarningCircle } from "@phosphor-icons/react/ssr";
 import { descartarVideoSubido } from "@/app/semiton/actions";
 import { cn } from "@/lib/cn";
 import { srcVideo } from "@/lib/imagen-url";
-import { MAX_VIDEO_BD_BYTES, MAX_VIDEO_BYTES, TIPOS_VIDEO, TROZO_VIDEO_BYTES, type ModoVideo } from "@/lib/video-limites";
+import { subirVideo } from "@/lib/subir-medios";
+import { MAX_VIDEO_BD_BYTES, MAX_VIDEO_BYTES, TIPOS_VIDEO, type ModoVideo } from "@/lib/video-limites";
 import { botonSecundario } from "./ui";
 
 const TIPOS: readonly string[] = TIPOS_VIDEO;
 const MB = 1024 * 1024;
 
 type Modo = ModoVideo;
-
-/** Manda un trozo. Si se corta la red lo reintenta un par de veces; un error del pedido no se arregla reintentando. */
-async function enviarTrozo(url: string, pedazo: Blob, senal: AbortSignal) {
-  let motivo = "Se cortó la conexión. Probá de nuevo.";
-  for (let intento = 0; intento < 3; intento++) {
-    let r: Response;
-    try {
-      r = await fetch(url, { method: "PUT", body: pedazo, signal: senal });
-    } catch (err) {
-      if (senal.aborted) throw err; // la persona canceló
-      continue; // falló la red: se reintenta
-    }
-    if (r.ok) return;
-    const e = (await r.json().catch(() => ({}))) as { error?: string };
-    motivo = e.error ?? "No se pudo subir el video.";
-    if (r.status < 500) break;
-  }
-  throw new Error(motivo);
-}
-
-/**
- * Sube a la base de datos de a trozos: cada pedido lleva un pedazo del archivo, porque una función de Vercel no
- * recibe pedidos de más de 4,5 MB. Al final el servidor comprueba que estén todos.
- */
-async function subirABd(archivo: File, onProgreso: (n: number) => void, senal: AbortSignal) {
-  const json = { "Content-Type": "application/json" };
-  const inicio = await fetch("/api/videos/db", {
-    method: "POST",
-    headers: json,
-    body: JSON.stringify({ accion: "iniciar", tipo: archivo.type, bytes: archivo.size }),
-    signal: senal,
-  });
-  const abierta = (await inicio.json().catch(() => ({}))) as { nombre?: string; trozo?: number; error?: string };
-  if (!inicio.ok || !abierta.nombre) throw new Error(abierta.error ?? "No se pudo preparar la subida.");
-
-  const trozo = abierta.trozo ?? TROZO_VIDEO_BYTES;
-  const total = Math.ceil(archivo.size / trozo);
-  for (let n = 0; n < total; n++) {
-    await enviarTrozo(`/api/videos/db?nombre=${encodeURIComponent(abierta.nombre)}&n=${n}`, archivo.slice(n * trozo, (n + 1) * trozo), senal);
-    onProgreso(((n + 1) / total) * 100);
-  }
-
-  const fin = await fetch("/api/videos/db", {
-    method: "POST",
-    headers: json,
-    body: JSON.stringify({ accion: "terminar", nombre: abierta.nombre }),
-    signal: senal,
-  });
-  const cerrada = (await fin.json().catch(() => ({}))) as { valor?: string; error?: string };
-  if (!fin.ok || !cerrada.valor) throw new Error(cerrada.error ?? "No se pudo terminar la subida.");
-  return cerrada.valor;
-}
-
-/** Sube directo a Vercel Blob: el permiso lo da /api/videos/blob y el archivo no pasa por nuestro servidor. */
-async function subirABlob(archivo: File, onProgreso: (n: number) => void, senal: AbortSignal) {
-  const { upload } = await import("@vercel/blob/client");
-  const limpio = archivo.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(-80) || "video.mp4";
-  const r = await upload(`videos/${limpio}`, archivo, {
-    access: "public",
-    handleUploadUrl: "/api/videos/blob",
-    multipart: true,
-    contentType: archivo.type,
-    abortSignal: senal,
-    onUploadProgress: ({ percentage }) => onProgreso(percentage),
-  });
-  return r.url;
-}
-
-/** Sube al disco del servidor con un pedido PUT, para ver el avance. */
-function subirLocal(archivo: File, onProgreso: (n: number) => void, senal: AbortSignal) {
-  return new Promise<string>((resolver, fallar) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", "/api/videos/local");
-    xhr.setRequestHeader("Content-Type", archivo.type);
-    xhr.upload.onprogress = (e) => e.lengthComputable && onProgreso((e.loaded / e.total) * 100);
-    xhr.onload = () => {
-      try {
-        const r = JSON.parse(xhr.responseText) as { valor?: string; error?: string };
-        if (xhr.status < 300 && r.valor) resolver(r.valor);
-        else fallar(new Error(r.error ?? "No se pudo subir el video."));
-      } catch {
-        fallar(new Error("No se pudo subir el video."));
-      }
-    };
-    xhr.onerror = () => fallar(new Error("Se cortó la conexión. Probá de nuevo."));
-    senal.addEventListener("abort", () => {
-      xhr.abort();
-      fallar(new DOMException("Cancelado", "AbortError"));
-    });
-    xhr.send(archivo);
-  });
-}
 
 type Props = {
   /** Video ya guardado en la noticia, al editar. */
@@ -151,8 +60,7 @@ export function VideoCampo({ actual, modo, error, alCambiarOcupado }: Props) {
     const ctl = new AbortController();
     control.current = ctl;
     try {
-      const subir = modo === "bd" ? subirABd : modo === "blob" ? subirABlob : subirLocal;
-      const nuevo = await subir(archivo, setProgreso, ctl.signal);
+      const nuevo = await subirVideo(archivo, modo, setProgreso, ctl.signal);
       descartarSiEraNuevo(valor);
       subidosAcaSolo.current.add(nuevo);
       setValor(nuevo);

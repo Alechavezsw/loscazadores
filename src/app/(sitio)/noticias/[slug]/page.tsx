@@ -10,6 +10,7 @@ import { CANAL_UI } from "@/components/site/canales";
 import { Compartir } from "@/components/site/Compartir";
 import { Incrustados } from "@/components/site/Incrustados";
 import { NewsCard } from "@/components/site/NewsCard";
+import { TextoNota } from "@/components/site/TextoNota";
 import { cuerpoSinTitulo, fechaCompleta, parrafos, resumen } from "@/lib/format";
 import { srcImagen, srcImagenAbsoluto, srcVideo } from "@/lib/imagen-url";
 import { getNoticia, getNoticias } from "@/lib/queries";
@@ -202,11 +203,16 @@ async function Articulo({ params }: { params: PageProps<"/noticias/[slug]">["par
           </figure>
         </Reveal>
 
-        <div className="mt-8 flex flex-col gap-6 text-lg leading-relaxed text-ink/90">
-          {parrafos(cuerpoSinTitulo(n.titulo, n.cuerpo)).map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </div>
+        {n.contenido ? (
+          // Escrita con el editor: texto con formato y, entre los párrafos, fotos, videos e incrustados.
+          <TextoNota doc={n.contenido} titulo={n.titulo} className="mt-8" />
+        ) : (
+          <div className="mt-8 flex flex-col gap-6 text-lg leading-relaxed text-ink/90">
+            {parrafos(cuerpoSinTitulo(n.titulo, n.cuerpo)).map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          </div>
+        )}
 
         <Incrustados urls={n.incrustados ?? []} titulo={n.titulo} />
 

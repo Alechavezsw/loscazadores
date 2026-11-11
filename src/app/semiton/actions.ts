@@ -3,8 +3,9 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { cerrarSesion, intentarLogin, requerirAdmin } from "@/lib/auth";
+import { limpiarContenido, mediosDe, textoPlano, type Contenido } from "@/lib/contenido";
 import { leerIncrustados, MAX_INCRUSTADOS } from "@/lib/embeds";
-import { borrarImagen, ErrorImagen, guardarImagen } from "@/lib/images";
+import { borrarImagen, ErrorImagen, guardarImagen, imagenValida } from "@/lib/images";
 import { borrarVideo, videoValido } from "@/lib/videos";
 import { getLiveStatus, urlLiveDelCanal } from "@/lib/live";
 import { ErrorFeed, leerFeed } from "@/lib/feeds";
@@ -19,6 +20,7 @@ import {
   esEspacio,
   type Ajustes,
   type Anuncio,
+  type Db,
   type LiveStatus,
   type Noticia,
   type YoutubeModo,
@@ -64,6 +66,72 @@ function leerMedios(fd: FormData, errores: Record<string, string>) {
   return { video, incrustados: lectura.validos.map((v) => v.url) };
 }
 
+/** El tope de lo que manda el editor, con formato y todo: muy por encima de lo que pesa una nota larga. */
+const MAX_CONTENIDO = 400_000;
+
+/**
+ * Lee lo que escribió el editor (campo «contenido»), lo deja limpio y saca de ahí el texto plano de la nota.
+ * Si el formulario no trae ese campo, se queda con el texto plano de siempre.
+ */
+function leerTexto(fd: FormData, errores: Record<string, string>): { cuerpo: string; contenido: Contenido | null } {
+  const crudo = texto(fd, "contenido");
+  if (!crudo) return { cuerpo: texto(fd, "cuerpo"), contenido: null };
+  if (crudo.length > MAX_CONTENIDO) {
+    errores.cuerpo = "El texto es demasiado largo.";
+    return { cuerpo: "", contenido: null };
+  }
+  let leido: unknown = null;
+  try {
+    leido = JSON.parse(crudo);
+  } catch {
+    // Se trata abajo como contenido ilegible.
+  }
+  const limpio = limpiarContenido(leido, { foto: imagenValida, video: videoValido });
+  if (!limpio) {
+    errores.cuerpo = "No se pudo leer el texto. Recargá la página y probá de nuevo.";
+    return { cuerpo: "", contenido: null };
+  }
+  if (limpio.errores.length > 0) errores.cuerpo = limpio.errores[0];
+  return { cuerpo: textoPlano(limpio.doc), contenido: limpio.doc };
+}
+
+/** Lo que el editor subió en esta pantalla (fotos y videos del texto), para borrar lo que al final no se usó. */
+function leerSubidos(fd: FormData): string[] {
+  try {
+    const lista: unknown = JSON.parse(texto(fd, "medios_subidos") || "[]");
+    return Array.isArray(lista) ? lista.filter((v): v is string => typeof v === "string").slice(0, 100) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Todas las fotos y los videos que alguna noticia, video o anuncio tiene anotados. */
+function mediosEnUso(db: Db): Set<string> {
+  const enUso = new Set<string>();
+  const sumar = (v: string | null | undefined) => {
+    if (v) enUso.add(v);
+  };
+  for (const n of db.noticias) {
+    sumar(n.imagen);
+    sumar(n.video);
+    const m = mediosDe(n.contenido);
+    m.fotos.forEach(sumar);
+    m.videos.forEach(sumar);
+  }
+  for (const p of db.sinCensura) {
+    sumar(p.imagen);
+    sumar(p.video);
+  }
+  for (const a of db.anuncios) sumar(a.imagen);
+  return enUso;
+}
+
+/** Borra las fotos y los videos de la lista que ya no usa nadie. */
+async function borrarSinUso(candidatos: string[], enUso: Set<string>) {
+  const sobran = [...new Set(candidatos)].filter((v) => !enUso.has(v));
+  await Promise.all(sobran.map((v) => (videoValido(v) ? borrarVideo(v) : imagenValida(v) ? borrarImagen(v) : undefined)));
+}
+
 // ───────────────────────── sesión ─────────────────────────
 
 export async function iniciarSesion(_prev: FormState, fd: FormData): Promise<FormState> {
@@ -89,17 +157,17 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
 
   const id = texto(fd, "id");
   const titulo = texto(fd, "titulo");
-  const cuerpo = texto(fd, "cuerpo");
   const categoria = texto(fd, "categoria");
   const zona = texto(fd, "zona").slice(0, 60);
   const espacioCrudo = texto(fd, "espacio");
   const errores: Record<string, string> = {};
+  const { cuerpo, contenido } = leerTexto(fd, errores);
 
   if (titulo.length < 5) errores.titulo = "Escribí un título de al menos 5 caracteres.";
   if (titulo.length > 160) errores.titulo = "El título no puede pasar de 160 caracteres.";
   if (espacioCrudo && !esEspacio(espacioCrudo)) errores.espacio = "Elegí un espacio de la lista.";
-  if (cuerpo.length < 10) errores.cuerpo = "Escribí el texto de la noticia.";
-  if (cuerpo.length > 8000) errores.cuerpo = "El texto no puede pasar de 8000 caracteres.";
+  if (!errores.cuerpo && cuerpo.length < 10) errores.cuerpo = "Escribí el texto de la noticia.";
+  if (!errores.cuerpo && cuerpo.length > 8000) errores.cuerpo = "El texto no puede pasar de 8000 caracteres.";
   if (!(CATEGORIAS as readonly string[]).includes(categoria)) errores.categoria = "Elegí una categoría.";
 
   const canales = CANALES.filter((c) => marcado(fd, `canal_${c}`));
@@ -133,11 +201,15 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
   const quitar = marcado(fd, "quitar_imagen");
   let imagenAnterior: string | null = null;
   let videoAnterior: string | null = null;
+  // Fotos y videos del texto que pueden haber quedado sin dueño: los de la versión anterior y los recién subidos.
+  const quizaSobran = leerSubidos(fd);
+  let enUso = new Set<string>();
 
   const resultado = await mutateDb((db) => {
     const campos = {
       titulo,
       cuerpo,
+      contenido: contenido ?? undefined,
       categoria,
       zona,
       canales,
@@ -155,10 +227,13 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
     if (existente) {
       imagenAnterior = existente.imagen;
       videoAnterior = existente.video ?? null;
+      const antes = mediosDe(existente.contenido);
+      quizaSobran.push(...antes.fotos, ...antes.videos);
       const imagen = imagenNueva ?? (quitar ? null : existente.imagen);
       // Una noticia de muestra deja de serlo apenas la editás.
       Object.assign(existente, campos, { imagen, ejemplo: false });
       if (campos.destacada) for (const n of db.noticias) if (n.id !== existente.id) n.destacada = false;
+      enUso = mediosEnUso(db);
       return "actualizada" as const;
     }
 
@@ -172,6 +247,7 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
       creada: ahora,
     });
     if (campos.destacada) for (const n of db.noticias) if (n.id !== nuevoId) n.destacada = false;
+    enUso = mediosEnUso(db);
     return "creada" as const;
   });
 
@@ -180,6 +256,8 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
   }
   // Si se cambió o se quitó el video, el anterior ya no lo usa nadie.
   if (videoAnterior && videoAnterior !== video) await borrarVideo(videoAnterior);
+  // Lo mismo con las fotos y los videos que se sacaron del texto, o que se subieron y al final no se usaron.
+  await borrarSinUso(quizaSobran, enUso);
 
   refrescar();
   redirect(`/semiton/noticias?msg=${resultado === "creada" ? "creada" : "guardada"}`);
@@ -187,13 +265,18 @@ export async function guardarNoticia(_prev: FormState, fd: FormData): Promise<Fo
 
 export async function eliminarNoticia(id: string) {
   await requerirAdmin();
+  let enUso = new Set<string>();
   const quitada = await mutateDb((db) => {
     const i = db.noticias.findIndex((n) => n.id === id);
     if (i < 0) return null;
-    return db.noticias.splice(i, 1)[0];
+    const fuera = db.noticias.splice(i, 1)[0];
+    enUso = mediosEnUso(db);
+    return fuera;
   });
   await borrarImagen(quitada?.imagen);
   await borrarVideo(quitada?.video);
+  const delTexto = mediosDe(quitada?.contenido);
+  await borrarSinUso([...delTexto.fotos, ...delTexto.videos], enUso);
   refrescar();
   redirect("/semiton/noticias?msg=eliminada");
 }
@@ -205,8 +288,7 @@ export async function eliminarNoticia(id: string) {
 export async function descartarVideoSubido(valor: string) {
   await requerirAdmin();
   if (!videoValido(valor)) return;
-  const { noticias, sinCensura } = await readDb();
-  if (noticias.some((n) => n.video === valor) || sinCensura.some((p) => p.video === valor)) return;
+  if (mediosEnUso(await readDb()).has(valor)) return;
   await borrarVideo(valor);
 }
 
@@ -513,7 +595,7 @@ export async function guardarAjustes(_prev: FormState, fd: FormData): Promise<Fo
   if (a.historiaTitulo.length < 3 || a.historiaTitulo.length > 60) errores.historiaTitulo = "Escribí el título, de 3 a 60 caracteres.";
   if (a.historiaTexto.length < 10 || a.historiaTexto.length > 200) errores.historiaTexto = "Escribí el texto, de 10 a 200 caracteres.";
   if (a.tomateve && !urlLiveDelCanal(a.tomateve)) {
-    errores.tomateve = "Escribí el @usuario del canal de Tomateve, su ID que empieza con UC o el enlace del canal.";
+    errores.tomateve = "Escribí el @usuario del canal de Tomateteve Streaming, su ID que empieza con UC o el enlace del canal.";
   }
   if (a.radioEnlace && !limpiarUrl(a.radioEnlace)) errores.radioEnlace = "Pegá el enlace completo para escuchar la radio.";
 

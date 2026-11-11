@@ -5,10 +5,11 @@ import { AdForm } from "@/components/admin/AdForm";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { botonSecundario, Mensaje, tarjeta, TituloPagina } from "@/components/admin/ui";
 import { Photo } from "@/components/site/Brand";
+import { cn } from "@/lib/cn";
 import { requerirAdmin } from "@/lib/auth";
 import { leerPanel } from "@/lib/stats";
 import { readDb } from "@/lib/store";
-import { SLOT_NOMBRE, SLOTS } from "@/lib/types";
+import { marcoAnuncio, SLOT_NOMBRE, SLOTS } from "@/lib/types";
 import { alternarAnuncio, eliminarAnuncio } from "../../actions";
 
 export const metadata: Metadata = { title: "Publicidad" };
@@ -32,7 +33,7 @@ export default async function Publicidad({ searchParams }: PageProps<"/semiton/p
     <>
       <TituloPagina
         titulo="Publicidad"
-        bajada="Los dos banners horizontales, los laterales de las columnas y la grilla de promociones. Los espacios libres muestran una invitación a anunciar."
+        bajada="Los banners horizontales y la grilla de promociones. Los espacios libres muestran una invitación a anunciar."
       />
 
       {aviso ? (
@@ -69,17 +70,19 @@ export default async function Publicidad({ searchParams }: PageProps<"/semiton/p
                     Se muestra el primer anuncio activo,{" "}
                     {slot === "banner" ? "arriba de «Lo último en nuestras redes»." : "debajo del bloque «Comunidad»."}
                   </p>
-                ) : slot !== "promo" ? (
-                  <p className="mb-4 text-sm text-ink/60">En cada lateral se muestra el primer anuncio activo.</p>
+                ) : slot === "lateral-der" ? (
+                  <p className="mb-4 text-sm text-ink/60">Se muestra el primer anuncio activo, en horizontal, arriba de «Secciones».</p>
+                ) : slot === "lateral-izq" ? (
+                  <p className="mb-4 text-sm text-ink/60">Este lugar ya no aparece en la portada.</p>
                 ) : (
                   <p className="mb-4 text-sm text-ink/60">Se muestran hasta 8 anuncios activos en la grilla.</p>
                 )}
                 <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {delSlot.map((a) => (
                     <li key={a.id} className={`${tarjeta} flex flex-col gap-3 p-4`}>
-                      <div className="aspect-[4/3] overflow-hidden rounded-lg bg-ink-1">
-                        {a.imagen ? <Photo nombre={a.imagen} alt={a.titulo || "Anuncio"} className={slot === "promo" ? "" : "object-contain"} /> : null}
-                      </div>
+                      <Link href={`/semiton/publicidad/${a.id}`} aria-label={`Editar la foto de ${a.titulo || "este anuncio"}`} className={cn("block overflow-hidden rounded-lg bg-ink-1", marcoAnuncio(slot).aspecto)}>
+                        {a.imagen ? <Photo nombre={a.imagen} alt="" className={marcoAnuncio(slot).ajuste === "contain" ? "object-contain" : ""} /> : null}
+                      </Link>
                       <div className="min-w-0">
                         <p className="truncate text-base font-semibold">{a.titulo || "Sin nombre"}</p>
                         <p className="truncate text-xs text-ink/60">{a.enlace || "Sin enlace"}</p>

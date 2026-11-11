@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import { CheckCircle, CopySimple, FacebookLogo, WarningCircle, WhatsappLogo } from "@phosphor-icons/react/ssr";
+import { cn } from "@/lib/cn";
 
-export function Compartir({ url, titulo }: { url: string; titulo: string }) {
+export function Compartir({
+  url,
+  titulo,
+  oscuro = false,
+}: {
+  url: string;
+  titulo: string;
+  /** Para ponerlo sobre un fondo negro: botones translúcidos con letras blancas. */
+  oscuro?: boolean;
+}) {
   const [estado, setEstado] = useState<"idle" | "ok" | "error">("idle");
 
   async function copiar() {
@@ -16,12 +26,14 @@ export function Compartir({ url, titulo }: { url: string; titulo: string }) {
     setTimeout(() => setEstado("idle"), 3000);
   }
 
-  const boton =
-    "flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold transition-all duration-700 ease-fluid hover:border-ink active:scale-[0.98]";
+  const boton = cn(
+    "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-700 ease-fluid active:scale-[0.98]",
+    oscuro ? "border-white/20 bg-white/5 text-white hover:border-white hover:bg-white/10" : "border-line bg-white hover:border-ink",
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="mr-2 text-sm font-semibold text-ink/60">Compartir</span>
+      <span className={cn("mr-2 text-sm font-semibold", oscuro ? "text-white/60" : "text-ink/60")}>Compartir</span>
       <a
         href={`https://wa.me/?text=${encodeURIComponent(`${titulo} ${url}`)}`}
         data-evento="compartir-whatsapp"
@@ -46,7 +58,7 @@ export function Compartir({ url, titulo }: { url: string; titulo: string }) {
         <CopySimple className="size-4" aria-hidden />
         Copiar enlace
       </button>
-      <span aria-live="polite" className="flex items-center gap-1 text-sm">
+      <span aria-live="polite" className={cn("flex items-center gap-1 text-sm", oscuro && "text-white/80")}>
         {estado === "ok" ? (
           <>
             <CheckCircle weight="fill" className="size-4 text-hunter" aria-hidden />

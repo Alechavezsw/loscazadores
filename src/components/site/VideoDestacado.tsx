@@ -2,8 +2,10 @@ import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { resumen } from "@/lib/format";
 import { reproductorDe } from "@/lib/reproductor";
+import { urlSitio } from "@/lib/sitio";
 import type { PiezaSC } from "@/lib/types";
 import { TimeAgo } from "@/components/TimeAgo";
+import { Compartir } from "./Compartir";
 import { VideoPortada } from "./VideoPortada";
 import { VideoPrincipal } from "./VideoPrincipal";
 
@@ -26,6 +28,8 @@ export function VideoDestacado({ p, verTodo }: { p: PiezaSC; verTodo?: { href: s
         </h3>
         {p.cuerpo ? <p className="line-clamp-5 text-base leading-relaxed text-white/70">{resumen(p.cuerpo, 260)}</p> : null}
         <TimeAgo iso={p.creada} className="text-sm text-white/50" />
+        {/* Se comparte la dirección propia del video, no la de la página donde está puesto. */}
+        <Compartir url={`${urlSitio()}${href}`} titulo={p.titulo} oscuro />
         {verTodo ? (
           <Link
             href={verTodo.href}

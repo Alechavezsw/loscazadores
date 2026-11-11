@@ -14,8 +14,11 @@ import type { Canal, Noticia } from "@/lib/types";
 import { TimeAgo } from "@/components/TimeAgo";
 import { Avatar, BrandCover, Photo } from "./Brand";
 import { CANAL_UI } from "./canales";
+import { FacebookCover } from "./FacebookCover";
 import { InsigniaVideo } from "./NewsCard";
+import { PerfilInstagram } from "./PerfilInstagram";
 import { UltimoVideo } from "./UltimoVideo";
+import { WhatsappCover } from "./WhatsappCover";
 import { YoutubeMedia } from "./YoutubeMedia";
 import type { VideoCanal } from "@/lib/youtube-canal";
 
@@ -28,11 +31,16 @@ type Props = {
   video?: VideoCanal | null;
 };
 
-function Media({ n, className }: { n: Noticia; className: string }) {
+function Media({ n, canal, className }: { n: Noticia; canal: Canal; className: string }) {
   return (
     <Link href={`/noticias/${n.slug}`} tabIndex={-1} aria-hidden className={cn("relative block overflow-hidden rounded", className)}>
       {n.imagen ? (
         <Photo nombre={n.imagen} alt="" className="transition-transform duration-700 ease-fluid group-hover:scale-105" />
+      ) : canal === "whatsapp" ? (
+        // Sin foto, las columnas de WhatsApp y Facebook muestran una escena animada con sus colores en vez de la portada negra.
+        <WhatsappCover etiqueta={n.categoria} className="size-full" />
+      ) : canal === "facebook" ? (
+        <FacebookCover etiqueta={n.categoria} className="size-full" />
       ) : (
         <BrandCover etiqueta={n.categoria} className="size-full" />
       )}
@@ -91,11 +99,11 @@ function Insignia({ ui }: { ui: (typeof CANAL_UI)[Canal] }) {
   if (ui.logo) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={ui.logo} alt="" loading="lazy" decoding="async" className="size-10 shrink-0 rounded-full object-cover" />
+      <img src={ui.logo} alt="" loading="lazy" decoding="async" className="size-11 shrink-0 rounded-full object-cover ring-2 ring-white" />
     );
   }
   return (
-    <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/15">
+    <span aria-hidden className={cn("flex size-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm", ui.tinta)}>
       <ui.Icono weight="fill" className="size-6" />
     </span>
   );
@@ -104,8 +112,10 @@ function Insignia({ ui }: { ui: (typeof CANAL_UI)[Canal] }) {
 export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg, video }: Props) {
   const ui = CANAL_UI[canal];
   const conVideo = canal === "youtube" ? (video ?? null) : null;
+  // Con el usuario cargado, la columna de Instagram muestra el perfil con la grilla de lo último publicado.
+  const conPerfilIg = canal === "instagram" && Boolean(perfilUrl) && /^[\w.]+$/.test(handleIg);
   // Con el último video a la vista, el botón lleva al canal y no al enlace de una nota.
-  const destino = (conVideo ? perfilUrl : n?.enlaces[canal] || perfilUrl || "").trim();
+  const destino = (conVideo || conPerfilIg ? perfilUrl : n?.enlaces[canal] || perfilUrl || "").trim();
   const resto = n ? cuerpoSinTitulo(n.titulo, n.cuerpo) : "";
   const hashtags = n
     ? `#SanJuan #${n.categoria.normalize("NFD").replace(/[̀-ͯ\s]/g, "")} #LosCazadores`
@@ -119,14 +129,14 @@ export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg, video }: P
           data-evento={`canal-${canal}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn("trama flex items-center gap-3 px-3 py-4 text-white", ui.barra)}
+          className={cn("flex items-center gap-3 px-3 py-4 text-white", ui.barra)}
         >
           <Insignia ui={ui} />
           <span className="flex-1 text-base font-bold uppercase leading-tight tracking-wide">{ui.nombre}</span>
           <CaretRight weight="bold" className="size-5 transition-transform duration-700 ease-fluid group-hover:translate-x-1" aria-hidden />
         </a>
       ) : (
-        <div className={cn("trama flex items-center gap-3 px-3 py-4 text-white", ui.barra)}>
+        <div className={cn("flex items-center gap-3 px-3 py-4 text-white", ui.barra)}>
           <Insignia ui={ui} />
           <span className="flex-1 text-base font-bold uppercase leading-tight tracking-wide">{ui.nombre}</span>
         </div>
@@ -135,6 +145,8 @@ export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg, video }: P
       <div className="flex flex-1 flex-col gap-3 p-3">
         {conVideo ? (
           <UltimoVideo video={conVideo} />
+        ) : conPerfilIg ? (
+          <PerfilInstagram usuario={handleIg} className="-mx-3 -mt-3" />
         ) : n ? (
           <>
             {canal !== "youtube" ? <Cabecera n={n} canal={canal} handleIg={handleIg} /> : null}
@@ -142,7 +154,7 @@ export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg, video }: P
             {canal === "youtube" ? (
               <YoutubeMedia imagen={n.imagen} titulo={n.titulo} categoria={n.categoria} slug={n.slug} />
             ) : canal === "facebook" ? null : (
-              <Media n={n} className={canal === "instagram" ? "aspect-square" : "aspect-[4/3]"} />
+              <Media n={n} canal={canal} className={canal === "instagram" ? "aspect-square" : "aspect-[4/3]"} />
             )}
 
             {canal === "instagram" ? (
@@ -172,7 +184,7 @@ export function ChannelCard({ canal, noticia: n, perfilUrl, handleIg, video }: P
             {/* Las etiquetas de ejemplo solo van en lo cargado a mano: en lo importado no se inventan. */}
             {canal === "instagram" && !n.origen ? <p className="text-sm text-[#00376b]">{hashtags}</p> : null}
 
-            {canal === "facebook" ? <Media n={n} className="aspect-[4/3]" /> : null}
+            {canal === "facebook" ? <Media n={n} canal={canal} className="aspect-[4/3]" /> : null}
           </>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded border border-dashed border-line p-6 text-center">
