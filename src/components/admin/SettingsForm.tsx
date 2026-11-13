@@ -107,7 +107,7 @@ export function SettingsForm({ ajustes, sitio }: { ajustes: Ajustes; sitio: stri
       </Seccion>
 
       <Seccion titulo="YouTube en vivo" detalle="Cuando el canal transmite, el video aparece arriba de la portada y en la página En vivo.">
-        <Campo id="youtube" etiqueta="Canal de YouTube" error={errores.youtube} ayuda="El @usuario del canal, su ID que empieza con UC o el enlace.">
+        <Campo id="youtube" etiqueta="Canal de YouTube" error={errores.youtube} ayuda="El @usuario del canal, su ID que empieza con UC o el enlace. Si lo dejás vacío se sigue al canal de Tomateteve Streaming, el de abajo.">
           <input id="youtube" name="youtube" defaultValue={ajustes.youtube} placeholder="@tucanal" aria-invalid={errores.youtube ? true : undefined} className={input} />
         </Campo>
 

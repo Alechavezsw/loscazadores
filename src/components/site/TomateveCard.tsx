@@ -13,6 +13,7 @@ import {
   TOMATEVE,
 } from "@/lib/programas";
 import type { LiveStatus } from "@/lib/types";
+import { useLive } from "@/components/LiveProvider";
 import { Logo } from "./Brand";
 import { ImagenMarca } from "./FichaMarca";
 import type { VideoCanal } from "@/lib/youtube-canal";
@@ -139,6 +140,9 @@ export function TomateveCard({
   }, [configurado]);
 
   const en = estado?.live && estado.videoId ? estado : null;
+  // Si la portada ya muestra arriba esta misma transmisión, acá no arranca sola: no hacen falta dos a la vez.
+  const { estado: arriba } = useLive();
+  const yaSeVeArriba = Boolean(en && arriba?.live && arriba.videoId === en.videoId);
 
   return (
     <article aria-label={TOMATEVE.nombre} className="flex h-full flex-col overflow-hidden rounded-2xl bg-ink text-white">
@@ -165,7 +169,11 @@ export function TomateveCard({
 
       <div className="relative aspect-video overflow-hidden bg-ink-1">
         {en ? (
-          <Reproductor videoId={en.videoId!} titulo={en.titulo ?? `${TOMATEVE.nombre} en vivo`} />
+          <Reproductor
+            videoId={en.videoId!}
+            titulo={en.titulo ?? `${TOMATEVE.nombre} en vivo`}
+            autoplay={!yaSeVeArriba}
+          />
         ) : video ? (
           <UltimoVideo video={video} lleno />
         ) : (
@@ -182,7 +190,9 @@ export function TomateveCard({
       <footer className="flex flex-1 flex-col gap-4 px-5 py-4 md:px-6">
         <p className="text-sm leading-relaxed text-white/70">
           {en
-            ? "Estás viendo el programa en vivo. Empieza sin sonido: tocá el parlante del reproductor para activarlo."
+            ? yaSeVeArriba
+              ? "El programa está en vivo. Tocá el video para verlo acá."
+              : "Estás viendo el programa en vivo. Empieza sin sonido: tocá el parlante del reproductor para activarlo."
             : video
               ? `${TOMATEVE.nombre} transmite ${PROGRAMACION_FRASE}.`
               : `${TOMATEVE.nombre} transmite ${PROGRAMACION_FRASE}. Cuando empiece, lo vas a ver acá mismo.`}

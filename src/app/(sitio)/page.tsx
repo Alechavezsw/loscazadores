@@ -58,7 +58,7 @@ export default async function Inicio() {
       <JsonLd datos={ldMedio(sitio, ajustes)} />
       <JsonLd datos={ldSitio(sitio)} />
       <Masthead lema={ajustes.lema} contactoHref={noticiaHref} />
-      <LiveSection canalUrl={perfilYoutube(ajustes.youtube)} />
+      <LiveSection canalUrl={perfilYoutube(ajustes.youtube) || perfilYoutube(ajustes.tomateve)} />
       <Ticker noticias={noticias} />
 
       <Banda tono="claro" lado="der" medio>

@@ -258,6 +258,7 @@ Lo demás que ya hace el sitio solo:
    | `CRON_SECRET` | Protege `/api/sync`. Vercel la manda sola al cron. Otra cadena aleatoria. |
    | `NEXT_PUBLIC_SITE_URL` | El dominio final con `https://`. Si falta, se usa el que Vercel le da al proyecto. |
    | `META_APP_ID`, `META_APP_SECRET` | Los de tu app de Meta (ver la sección de Meta). |
+   | `YOUTUBE_API_KEY` | Clave de la YouTube Data API v3. Sin ella el sitio publicado no se entera de que el canal está en vivo: a los servidores YouTube no les muestra la transmisión en la página del canal. Se crea gratis en la consola de Google Cloud (habilitar «YouTube Data API v3», después *Credenciales, Crear credenciales, Clave de API*). |
 
    Para generar una cadena aleatoria:
 

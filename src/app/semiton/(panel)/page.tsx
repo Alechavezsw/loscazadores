@@ -7,7 +7,7 @@ import { Photo } from "@/components/site/Brand";
 import { EnVivoInsignia } from "@/components/site/LiveSection";
 import { requerirAdmin } from "@/lib/auth";
 import { fechaBreve } from "@/lib/format";
-import { getLiveStatus } from "@/lib/live";
+import { ajustesDeVivo, getLiveStatus } from "@/lib/live";
 import { leerActivos, leerPanel } from "@/lib/stats";
 import { readDb } from "@/lib/store";
 import { borrarEjemplos } from "../actions";
@@ -29,7 +29,7 @@ const MOTIVOS: Record<string, string> = {
 export default async function Resumen() {
   await requerirAdmin();
   const db = await readDb();
-  const live = await getLiveStatus(db.ajustes);
+  const live = await getLiveStatus(ajustesDeVivo(db.ajustes));
   // Si las estadísticas fallan (por ejemplo, la base no responde), el resumen igual se muestra.
   const [visitasHoy, activos] = await Promise.all([leerPanel(1).catch(() => null), leerActivos().catch(() => null)]);
 

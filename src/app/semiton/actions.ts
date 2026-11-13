@@ -7,7 +7,7 @@ import { limpiarContenido, mediosDe, textoPlano, type Contenido } from "@/lib/co
 import { leerIncrustados, MAX_INCRUSTADOS } from "@/lib/embeds";
 import { borrarImagen, ErrorImagen, guardarImagen, imagenValida } from "@/lib/images";
 import { borrarVideo, videoValido } from "@/lib/videos";
-import { getLiveStatus, urlLiveDelCanal } from "@/lib/live";
+import { ajustesDeVivo, getLiveStatus, urlLiveDelCanal } from "@/lib/live";
 import { ErrorFeed, leerFeed } from "@/lib/feeds";
 import { conectar, ErrorMeta, verificar } from "@/lib/meta";
 import { mutateDb, newId, readDb, slugify } from "@/lib/store";
@@ -622,9 +622,8 @@ export type PruebaLive = { estado: LiveStatus } | null;
 export async function probarEnVivo(_prev: PruebaLive, fd: FormData): Promise<PruebaLive> {
   await requerirAdmin();
   const a = leerAjustes(fd);
-  // canal=tomateve prueba el canal de TOMATEVE en lugar del propio.
-  const ajustes =
-    texto(fd, "canal") === "tomateve" ? { youtube: a.tomateve, youtubeModo: "auto" as const, youtubeVideoManual: "" } : a;
+  // canal=tomateve prueba el canal de TomateTV en lugar del propio. Se resuelve igual que en el sitio.
+  const ajustes = ajustesDeVivo(a, texto(fd, "canal") === "tomateve" ? "tomateve" : "propio");
   return { estado: await getLiveStatus(ajustes, { forzar: true }) };
 }
 

@@ -24,7 +24,7 @@ export default async function EnVivo() {
         titulo="En vivo"
         bajada="Cuando salimos al aire por YouTube, el video aparece acá solo. No hace falta actualizar la página."
       />
-      <EnVivoPanel canalUrl={perfilYoutube(ajustes.youtube)} whatsappCanalUrl={limpiarUrl(ajustes.whatsappCanal)} />
+      <EnVivoPanel canalUrl={perfilYoutube(ajustes.youtube) || perfilYoutube(ajustes.tomateve)}whatsappCanalUrl={limpiarUrl(ajustes.whatsappCanal)} />
 
       {noticias.length > 0 ? (
         <section aria-labelledby="mientras-tanto" className="mx-auto w-full max-w-[1440px] px-4 pb-16 md:px-6 md:pb-24">
