@@ -20,9 +20,9 @@ declare global {
 }
 
 /**
- * Cuántas conexiones abre este proceso. El pooler en modo sesión reparte 15 entre todo el proyecto
- * (el build, el sitio publicado y la computadora de desarrollo). Una por proceso alcanza: las consultas
- * esperan su turno en vez de abrir otra.
+ * Cuántas conexiones abre este proceso. Una alcanza: las consultas esperan su turno en vez de abrir otra.
+ * El sitio publicado usa el pooler en modo transacción (ver urlPostgres) para no llenar los 15 lugares
+ * del modo sesión.
  */
 function topeDelPool() {
   if (process.env.NEXT_PHASE === "phase-production-build") return 1;
@@ -63,7 +63,7 @@ export function conexion() {
     const pool = new Pool({
       connectionString: urlPostgres(),
       max,
-      idleTimeoutMillis: 10_000,
+      idleTimeoutMillis: 1_000,
       connectionTimeoutMillis: 15_000,
     });
     const consultar = pool.query.bind(pool) as (...args: unknown[]) => Promise<unknown>;

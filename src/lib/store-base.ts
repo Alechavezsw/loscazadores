@@ -219,10 +219,20 @@ export function completar(db: Partial<Db> | null | undefined): Db {
   };
 }
 
+/**
+ * El puerto 5432 del pooler de Supabase es modo sesión: guarda un lugar por conexión y el plan chico
+ * solo tiene 15 para todo el proyecto. En el sitio publicado cada visita abriría uno y la página falla.
+ * El 6543 es modo transacción: el lugar se suelta al terminar cada consulta.
+ */
+function enModoTransaccion(url: string) {
+  if (!url.includes("pooler.supabase.com") || !url.includes(":5432")) return url;
+  return url.replace(":5432", ":6543");
+}
+
 /** Dirección de la base Postgres. La integración de Neon en Vercel la define sola. */
 export function urlPostgres() {
   if (process.env.ALMACEN === "archivo") return "";
-  return process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+  return enModoTransaccion(process.env.DATABASE_URL || process.env.POSTGRES_URL || "");
 }
 
 /** Contrato que cumplen los dos motores de almacenamiento. */
