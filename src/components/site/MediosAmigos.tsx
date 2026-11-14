@@ -1,7 +1,7 @@
-import { FacebookLogo, Globe, InstagramLogo, TiktokLogo, WhatsappLogo, XLogo, YoutubeLogo } from "@phosphor-icons/react/ssr";
+import { FacebookLogo, Globe, Handshake, InstagramLogo, TiktokLogo, WhatsappLogo, XLogo, YoutubeLogo } from "@phosphor-icons/react/ssr";
 import { cn } from "@/lib/cn";
-import { MEDIOS_AMIGOS, type MedioAmigo } from "@/lib/marcas";
-import { ImagenMarca } from "./FichaMarca";
+import type { MedioAmigo } from "@/lib/types";
+import { Photo } from "./Brand";
 
 type IconoRed = typeof InstagramLogo;
 
@@ -35,7 +35,7 @@ function Casillero({ medio, enlace, grande }: { medio: MedioAmigo; enlace: strin
         )}
       >
         {medio.logo ? (
-          <ImagenMarca marca={{ nombre: medio.nombre, logo: medio.logo }} className="max-h-full max-w-full object-contain" />
+          <Photo nombre={medio.logo} alt={medio.nombre} className="h-auto max-h-full w-auto max-w-full object-contain" />
         ) : (
           <span className="text-center text-xs font-extrabold uppercase leading-tight tracking-tight sm:text-sm">{medio.nombre}</span>
         )}
@@ -65,16 +65,23 @@ function Casillero({ medio, enlace, grande }: { medio: MedioAmigo; enlace: strin
 }
 
 /**
- * Los logos de los medios aliados, cada uno con su enlace. `radioEnlace` es el enlace de la radio cargado en
- * Ajustes (lo usa Radio del Sur). `grande` es para la página de la sección.
+ * Los logos de los medios aliados, cada uno con su enlace. Vienen del panel («Medios amigos»), ya filtrados por los
+ * que están activos y en su orden. `grande` es para la página de la sección.
  */
-export function MediosAmigos({ radioEnlace, grande = false }: { radioEnlace: string; grande?: boolean }) {
-  if (MEDIOS_AMIGOS.length === 0) return null;
+export function MediosAmigos({ medios, grande = false }: { medios: MedioAmigo[]; grande?: boolean }) {
+  if (medios.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-2 rounded border border-dashed border-line p-8 text-center">
+        <Handshake className="size-8 text-ink/30" aria-hidden />
+        <p className="text-sm font-semibold">Pronto vas a ver acá a nuestros medios amigos</p>
+      </div>
+    );
+  }
   return (
     <ul className={cn("grid grid-cols-2 sm:grid-cols-3", grande ? "gap-4 lg:grid-cols-4 xl:grid-cols-5" : "gap-3")}>
-      {MEDIOS_AMIGOS.map((m) => (
-        <li key={m.nombre}>
-          <Casillero medio={m} enlace={m.enlaceDeLaRadio ? radioEnlace : (m.enlace ?? "")} grande={grande} />
+      {medios.map((m) => (
+        <li key={m.id}>
+          <Casillero medio={m} enlace={m.enlace} grande={grande} />
         </li>
       ))}
     </ul>

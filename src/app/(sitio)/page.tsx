@@ -17,8 +17,8 @@ import { Promos } from "@/components/site/Promos";
 import { TaglineReveal } from "@/components/site/TaglineReveal";
 import { Ticker } from "@/components/site/Ticker";
 import { VideosInicio } from "@/components/site/VideosInicio";
-import { getAjustes, getAnuncios, getNoticias, getVideos } from "@/lib/queries";
-import { limpiarUrl, linkWhatsapp, perfilYoutube } from "@/lib/urls";
+import { getAjustes, getAnuncios, getMediosAmigos, getNoticias, getVideos } from "@/lib/queries";
+import { linkWhatsapp, perfilYoutube } from "@/lib/urls";
 import { getUltimoVideo } from "@/lib/youtube-canal";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,10 +34,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Inicio() {
   const ajustesPendiente = getAjustes();
-  const [ajustes, noticias, anuncios, videos, ultimoVideo] = await Promise.all([
+  const [ajustes, noticias, anuncios, medios, videos, ultimoVideo] = await Promise.all([
     ajustesPendiente,
     getNoticias(),
     getAnuncios(),
+    getMediosAmigos(),
     getVideos(),
     // El último video sale del mismo canal que el enlace de la columna de YouTube.
     ajustesPendiente.then((a) => getUltimoVideo(a.youtube || a.tomateve)),
@@ -86,7 +87,7 @@ export default async function Inicio() {
       <Banda tono="claro" lado="izq" lupa medio>
         <EspaciosInicio
           noticias={noticias}
-          radioEnlace={limpiarUrl(ajustes.radioEnlace)}
+          medios={medios}
           anuncio={anuncios.find((a) => a.slot === "lateral-der") ?? null}
           consultaHref={consultaHref}
         />

@@ -17,11 +17,13 @@ import {
   CANALES,
   CATEGORIAS,
   SLOTS,
+  TIPOS_MEDIO,
   esEspacio,
   type Ajustes,
   type Anuncio,
   type Db,
   type LiveStatus,
+  type MedioAmigo,
   type Noticia,
   type YoutubeModo,
 } from "@/lib/types";
@@ -124,6 +126,7 @@ function mediosEnUso(db: Db): Set<string> {
     sumar(p.video);
   }
   for (const a of db.anuncios) sumar(a.imagen);
+  for (const m of db.mediosAmigos) sumar(m.logo);
   return enUso;
 }
 
@@ -523,6 +526,117 @@ export async function eliminarAnuncio(id: string) {
     return db.anuncios.splice(i, 1)[0].imagen;
   });
   await borrarImagen(imagen);
+  refrescar();
+}
+
+// ───────────────────────── medios amigos ─────────────────────────
+
+/** Alta y edición de un medio aliado: nombre, tipo, enlace, logo y si se muestra. Con `id` edita; sin `id` crea. */
+export async function guardarMedio(_prev: FormState, fd: FormData): Promise<FormState> {
+  await requerirAdmin();
+
+  const id = texto(fd, "id");
+  const nombre = texto(fd, "nombre").slice(0, 60);
+  const tipo = texto(fd, "tipo");
+  const crudo = texto(fd, "enlace");
+  const enlace = crudo ? limpiarUrl(crudo) : "";
+  const logo = archivo(fd, "logo");
+  const quitarLogo = marcado(fd, "quitar_imagen");
+  const errores: Record<string, string> = {};
+
+  const existente = id ? (await readDb()).mediosAmigos.find((m) => m.id === id) : undefined;
+  if (id && !existente) return { ok: false, mensaje: "Ese medio ya no existe. Volvé a la lista de medios amigos." };
+
+  if (!nombre) errores.nombre = "Escribí el nombre del medio.";
+  if (!(TIPOS_MEDIO as readonly string[]).includes(tipo)) errores.tipo = "Elegí qué clase de medio es.";
+  if (crudo && !enlace) errores.enlace = "Ese enlace no es válido. Pegá la dirección completa.";
+  if (Object.keys(errores).length > 0) return { ok: false, mensaje: "Revisá los campos marcados.", errores };
+
+  let nombreLogo: string | null = null;
+  if (logo) {
+    try {
+      nombreLogo = await guardarImagen(logo);
+    } catch (e) {
+      return {
+        ok: false,
+        mensaje: "Revisá los campos marcados.",
+        errores: { imagen: e instanceof ErrorImagen ? e.message : "No pudimos guardar el logo." },
+      };
+    }
+  }
+
+  if (!existente) {
+    const medio: MedioAmigo = {
+      id: newId(),
+      nombre,
+      tipo: tipo as MedioAmigo["tipo"],
+      logo: nombreLogo,
+      enlace,
+      activo: marcado(fd, "activo"),
+      creada: new Date().toISOString(),
+    };
+    await mutateDb((db) => {
+      db.mediosAmigos.push(medio);
+    });
+    refrescar();
+    return { ok: true, mensaje: "Medio guardado." };
+  }
+
+  let logoAnterior: string | null = null;
+  const encontrado = await mutateDb((db) => {
+    const m = db.mediosAmigos.find((x) => x.id === existente.id);
+    if (!m) return false;
+    logoAnterior = m.logo;
+    m.nombre = nombre;
+    m.tipo = tipo as MedioAmigo["tipo"];
+    m.enlace = enlace;
+    m.activo = marcado(fd, "activo");
+    if (nombreLogo) m.logo = nombreLogo;
+    else if (quitarLogo) m.logo = null;
+    return true;
+  });
+
+  if (!encontrado) {
+    // Se borró mientras se editaba: el logo recién subido no lo usa nadie.
+    await borrarImagen(nombreLogo);
+    return { ok: false, mensaje: "Ese medio se borró mientras lo editabas." };
+  }
+  // El logo anterior ya no lo usa nadie si se lo reemplazó por otro o se lo quitó.
+  if (logoAnterior && (nombreLogo || quitarLogo)) await borrarImagen(logoAnterior);
+
+  refrescar();
+  redirect("/semiton/medios-amigos?msg=guardado");
+}
+
+export async function alternarMedio(id: string) {
+  await requerirAdmin();
+  await mutateDb((db) => {
+    const m = db.mediosAmigos.find((x) => x.id === id);
+    if (m) m.activo = !m.activo;
+  });
+  refrescar();
+}
+
+/** Sube o baja un medio un lugar en la lista (el orden en que se ven en el sitio). */
+export async function moverMedio(id: string, direccion: "arriba" | "abajo") {
+  await requerirAdmin();
+  await mutateDb((db) => {
+    const i = db.mediosAmigos.findIndex((x) => x.id === id);
+    const j = direccion === "arriba" ? i - 1 : i + 1;
+    if (i < 0 || j < 0 || j >= db.mediosAmigos.length) return;
+    [db.mediosAmigos[i], db.mediosAmigos[j]] = [db.mediosAmigos[j], db.mediosAmigos[i]];
+  });
+  refrescar();
+}
+
+export async function eliminarMedio(id: string) {
+  await requerirAdmin();
+  const logo = await mutateDb((db) => {
+    const i = db.mediosAmigos.findIndex((m) => m.id === id);
+    if (i < 0) return null;
+    return db.mediosAmigos.splice(i, 1)[0].logo;
+  });
+  await borrarImagen(logo);
   refrescar();
 }
 

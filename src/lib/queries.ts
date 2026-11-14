@@ -57,3 +57,12 @@ export async function getAnuncios() {
   const { anuncios } = await readDb();
   return anuncios.filter((a) => a.activo);
 }
+
+/** Los medios aliados que se muestran, en el orden en que se cargaron en el panel. */
+export async function getMediosAmigos() {
+  "use cache";
+  cacheTag("contenido");
+  cacheLife("minutes");
+  const { mediosAmigos } = await readDb();
+  return mediosAmigos.filter((m) => m.activo);
+}

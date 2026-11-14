@@ -45,24 +45,6 @@ export const MARCAS = {
   bailongo: { nombre: "Se Armó el Bailongo", logo: "/brand/se-armo-el-bailongo.png", fondo: "rojo" },
 } satisfies Record<string, Marca>;
 
-/** Un medio aliado: aparece con su logo y su enlace en la sección «Medios amigos». */
-export type MedioAmigo = {
-  nombre: string;
-  /** Qué clase de medio es: se muestra bajo el logo. */
-  tipo: "Radio" | "Página web" | "Canal" | "Red social";
-  /** Ruta del logo en public/brand/. Sin logo se muestra el nombre en letras. */
-  logo: string | null;
-  /** A dónde lleva. Sin dirección el medio se muestra igual, pero no es un enlace. */
-  enlace?: string;
-  /** Usa el enlace de la radio que se carga en Ajustes, para no escribirlo en dos lugares. */
-  enlaceDeLaRadio?: boolean;
-};
-
-/** Los medios aliados, en el orden en que se muestran. Se suma uno nuevo acá, con su logo y su enlace. */
-export const MEDIOS_AMIGOS: readonly MedioAmigo[] = [
-  { nombre: "Radio del Sur", tipo: "Radio", logo: MARCAS.radio.logo, enlace: "https://www.instagram.com/radio_delsur/" },
-];
-
 /** Los programas que recorre el carrusel del final de la portada. Se suma uno nuevo acá, apenas tenga logo. */
 export const CARRUSEL_PROGRAMAS: readonly Marca[] = [MARCAS.tomateve, MARCAS.rockola, MARCAS.madres, MARCAS.bailongo, MARCAS.cazadores];
 

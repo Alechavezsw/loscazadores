@@ -17,10 +17,12 @@ type Props = {
   ajuste?: "cover" | "contain";
   /** Muestra la casilla para quitar la imagen actual. Se apaga donde la imagen es obligatoria. */
   permitirQuitar?: boolean;
+  /** Fondo blanco en la vista previa aunque la foto se vea entera (por ejemplo, un logo que va sobre un casillero blanco). */
+  fondoClaro?: boolean;
 };
 
 /** Selector de imagen con vista previa. Si el formulario se reinicia, la vista previa también. */
-export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "aspect-video", ajuste = "cover", permitirQuitar = true }: Props) {
+export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "aspect-video", ajuste = "cover", permitirQuitar = true, fondoClaro = false }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [quitar, setQuitar] = useState(false);
@@ -107,7 +109,7 @@ export function ImagenCampo({ name = "imagen", actual, error, ayuda, aspecto = "
           htmlFor={name}
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-dashed text-center transition-colors duration-700 ease-fluid peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-hunter hover:border-ink",
-            ajuste === "contain" ? "bg-ink-1" : "bg-white",
+            ajuste === "contain" && !fondoClaro ? "bg-ink-1" : "bg-white",
             mensaje ? "border-hunter" : "border-line",
             aspecto,
           )}

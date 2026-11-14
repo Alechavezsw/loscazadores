@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowsClockwise, ChartBar, Gauge, Gear, Megaphone, Newspaper, Play } from "@phosphor-icons/react/ssr";
+import { ArrowsClockwise, ChartBar, Gauge, Gear, Handshake, Megaphone, Newspaper, Play } from "@phosphor-icons/react/ssr";
 import { cn } from "@/lib/cn";
 
 const ITEMS = [
@@ -12,6 +12,7 @@ const ITEMS = [
   { href: "/semiton/estadisticas", label: "Estadísticas", Icono: ChartBar, exacto: false },
   { href: "/semiton/redes", label: "Redes", Icono: ArrowsClockwise, exacto: false },
   { href: "/semiton/publicidad", label: "Publicidad", Icono: Megaphone, exacto: false },
+  { href: "/semiton/medios-amigos", label: "Medios amigos", Icono: Handshake, exacto: false },
   { href: "/semiton/ajustes", label: "Ajustes", Icono: Gear, exacto: false },
 ] as const;
 

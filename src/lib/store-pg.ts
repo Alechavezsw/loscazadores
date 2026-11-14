@@ -128,6 +128,7 @@ function fotoDe(db: Db): Foto {
       ["ajustes", JSON.stringify(db.ajustes)],
       ["meta", JSON.stringify(db.meta)],
       ["anuncios", JSON.stringify(db.anuncios)],
+      ["mediosamigos", JSON.stringify(db.mediosAmigos)],
       ["sincensura", JSON.stringify(db.sinCensura)],
     ]),
     noticias: new Map(db.noticias.map((n) => [n.id, JSON.stringify(n)])),
@@ -143,6 +144,7 @@ async function cargar(q: Consulta): Promise<Db | null> {
     ajustes: doc.get("ajustes") as Db["ajustes"] | undefined,
     meta: doc.get("meta") as Db["meta"] | undefined,
     anuncios: doc.get("anuncios") as Db["anuncios"] | undefined,
+    mediosAmigos: doc.get("mediosamigos") as Db["mediosAmigos"] | undefined,
     sinCensura: doc.get("sincensura") as Db["sinCensura"] | undefined,
     noticias: nt.rows.map((r) => r.datos),
   });

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarStar, EnvelopeSimple, EyeSlash, HandHeart, Handshake } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/cn";
-import { notaEnSeccion, rutaSeccion, seccionPorSlug, type Anuncio, type Noticia } from "@/lib/types";
+import { notaEnSeccion, rutaSeccion, seccionPorSlug, type Anuncio, type MedioAmigo, type Noticia } from "@/lib/types";
 import { AdRail } from "./AdRail";
 import { SectionTitle } from "./Brand";
 import { MediosAmigos } from "./MediosAmigos";
@@ -39,12 +39,12 @@ export const estaEnComunidad = (n: Noticia) => TARJETAS.some((t) => t.exclusiva 
 function EspacioCard({
   tarjeta,
   noticias,
-  radioEnlace,
+  medios,
   ancha,
 }: {
   tarjeta: Tarjeta;
   noticias: Noticia[];
-  radioEnlace: string;
+  medios: MedioAmigo[];
   ancha: boolean;
 }) {
   const { Icono, seccion } = tarjeta;
@@ -72,7 +72,7 @@ function EspacioCard({
 
       <div className="flex flex-1 flex-col gap-4 p-4">
         {deMedios ? (
-          <MediosAmigos radioEnlace={radioEnlace} />
+          <MediosAmigos medios={medios} />
         ) : ultima && ancha ? (
           <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <NewsCard n={ultima} />
@@ -117,16 +117,16 @@ function EspacioCard({
 /**
  * El bloque «Comunidad»: las secciones de PRESENTACION, de a dos por fila (la última se estira si queda sola). Cada
  * una muestra sus notas más recientes (las de su categoría); la de medios amigos muestra logos con enlaces.
- * `radioEnlace` es el enlace de la radio de Ajustes.
+ * `medios` son los medios aliados activos que se cargan desde el panel.
  */
 export function EspaciosInicio({
   noticias,
-  radioEnlace,
+  medios,
   anuncio,
   consultaHref,
 }: {
   noticias: Noticia[];
-  radioEnlace: string;
+  medios: MedioAmigo[];
   /** El anuncio que iba en el lateral derecho: ahora es una franja horizontal arriba del título. */
   anuncio: Anuncio | null;
   consultaHref: string;
@@ -147,7 +147,7 @@ export function EspaciosInicio({
               <EspacioCard
                 tarjeta={t}
                 noticias={noticias.filter((n) => notaEnSeccion(n, t.seccion)).slice(0, 3)}
-                radioEnlace={radioEnlace}
+                medios={medios}
                 ancha={ancha}
               />
             </Reveal>

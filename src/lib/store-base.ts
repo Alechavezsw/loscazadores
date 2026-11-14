@@ -1,7 +1,7 @@
 import "server-only";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import type { Ajustes, Db, MetaDb, Noticia, PiezaSC } from "./types";
+import type { Ajustes, Db, MedioAmigo, MetaDb, Noticia, PiezaSC } from "./types";
 
 // DATA_DIR permite poner los datos en un disco persistente fuera de la carpeta del proyecto.
 export const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
@@ -39,6 +39,21 @@ export const META_BASE: MetaDb = {
   feeds: [],
   webhook: { claveHash: null, creada: null, recibidos: 0, eventos: [] },
 };
+
+/** El medio con que arranca la sección «Medios amigos» mientras nadie la haya editado desde el panel. */
+export function mediosAmigosBase(): MedioAmigo[] {
+  return [
+    {
+      id: "radiosur",
+      nombre: "Radio del Sur",
+      tipo: "Radio",
+      logo: null,
+      enlace: "https://www.instagram.com/radio_delsur/",
+      activo: true,
+      creada: "2026-01-01T00:00:00.000Z",
+    },
+  ];
+}
 
 export function newId() {
   return randomUUID().replace(/-/g, "").slice(0, 8);
@@ -130,6 +145,7 @@ export function seed(): Db {
     ajustes: { ...AJUSTES_BASE },
     meta: structuredClone(META_BASE),
     anuncios: [],
+    mediosAmigos: mediosAmigosBase(),
     sinCensura: piezasDeEjemplo(ahora),
     noticias: [
       crear(
@@ -191,6 +207,8 @@ export function completar(db: Partial<Db> | null | undefined): Db {
     noticias: db?.noticias ?? [],
     sinCensura: db?.sinCensura ?? [],
     anuncios: db?.anuncios ?? [],
+    // Una lista guardada vacía es una decisión (se quitaron todos); solo si nunca se guardó se usa la de arranque.
+    mediosAmigos: db?.mediosAmigos ?? mediosAmigosBase(),
     ajustes,
     meta: {
       conexion: db?.meta?.conexion ?? null,

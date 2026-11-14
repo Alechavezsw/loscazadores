@@ -28,9 +28,11 @@ Para producción: `npm run build` y `npm start`. Copiá `.env.example` a `.env.l
   sola, ocupa todo el ancho), cada una con su propia sección: **Tapá mi número**, **Cartas de la Vieja Pocha** y
   **Solidario** (notas de esa categoría, que no se repiten en las últimas noticias), **Eventos** (las notas de
   Eventos y de Espectáculos, que sí se repiten) y **Medios amigos**
-  (`/secciones/medios-amigos`), que no lleva notas sino los **logos y enlaces de medios aliados**: se suman en
-  `MEDIOS_AMIGOS`, en `src/lib/marcas.ts` (nombre, tipo, logo en `public/brand/` y enlace). Radio del Sur usa el
-  «Enlace para escuchar la radio» de Ajustes; mientras no esté cargado se ve sin enlace. Viva Feria se retiró
+  (`/secciones/medios-amigos`), que no lleva notas sino los **logos y enlaces de medios aliados**: se cargan desde el
+  panel, en **Medios amigos** (`/semiton/medios-amigos`): nombre, tipo, enlace, logo (opcional; sin logo se ve el
+  nombre en letras), pausar, subir/bajar de lugar y eliminar. Se guardan en `Db.mediosAmigos` (en Postgres, la
+  clave `mediosamigos` de `lc_kv`) y arrancan con Radio del Sur hasta que se edite la lista. El ícono de la red sale
+  solo del enlace. Viva Feria se retiró
   (página, espacio y enlaces): las notas que lo tenían guardado se ven en el panel como «Espacio retirado» y, al
   editarlas, quedan sin espacio.
 - **Videos**: la sección de videos (hoy "Sin censura"). Su dirección propia es `/sin-censura` (y `/sin-censura/<video>`

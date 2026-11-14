@@ -41,7 +41,7 @@ export type Seccion = {
   bajada: string;
   /** Otras categorías cuyas notas también van en esta sección, además de la que lleva su mismo nombre. */
   tambien?: readonly Categoria[];
-  /** «medios»: en vez de notas, muestra logos y enlaces de medios aliados (ver MEDIOS_AMIGOS en lib/marcas.ts). */
+  /** «medios»: en vez de notas, muestra logos y enlaces de medios aliados (se cargan desde el panel, en «Medios amigos»). */
   tipo?: "medios";
 };
 
@@ -206,6 +206,23 @@ export type Anuncio = {
   creada: string;
 };
 
+/** Qué clase de medio aliado es: se muestra bajo el logo cuando el enlace no lleva a una red conocida. */
+export const TIPOS_MEDIO = ["Radio", "Página web", "Diario", "Canal", "Red social"] as const;
+export type TipoMedio = (typeof TIPOS_MEDIO)[number];
+
+/** Un medio aliado: aparece con su logo y su enlace en la sección «Medios amigos». Se carga desde el panel. */
+export type MedioAmigo = {
+  id: string;
+  nombre: string;
+  tipo: TipoMedio;
+  /** Foto del logo (dirección en Vercel Blob o nombre del archivo, ver srcImagen). Sin logo se muestra el nombre en letras. */
+  logo: string | null;
+  /** A dónde lleva. Sin dirección el medio se muestra igual, pero no es un enlace. */
+  enlace: string;
+  activo: boolean;
+  creada: string;
+};
+
 export type YoutubeModo = "auto" | "manual" | "off";
 
 export type Ajustes = {
@@ -301,6 +318,8 @@ export type Db = {
   noticias: Noticia[];
   sinCensura: PiezaSC[];
   anuncios: Anuncio[];
+  /** Los medios aliados, en el orden en que se muestran. */
+  mediosAmigos: MedioAmigo[];
   ajustes: Ajustes;
   meta: MetaDb;
 };
